@@ -1,25 +1,18 @@
-import java.util.Random;
 
 public class FireGrid {
     private double[][] grid;
     private int width;
     private int height;
-    private Random random = new Random();
     
     public static final double MAX_INTENSITY = 100.0;
     public static final double INITIAL_INTENSITY = 80.0;
+    // Seuil d'intensité pour déterminer si une case est en feu
     public static final double INTENSITY_THRESHOLD = 10.0;
 
     public FireGrid(int width, int height) {
         this.width = width;
         this.height = height;
         this.grid = new double[width][height];
-    }
-
-    public void initializeFire() {
-        int startX = random.nextInt(width);
-        int startY = random.nextInt(height);
-        grid[startX][startY] = INITIAL_INTENSITY;
     }
 
     public void updateGrid(double[][] newGrid) {
@@ -58,16 +51,8 @@ public class FireGrid {
         return this.height;
     }
 
-    public boolean getValueAt(int x, int y) {
-        return grid[x][y] > INTENSITY_THRESHOLD;
-    }
-
     public double getIntensityAt(int x, int y) {
         return grid[x][y];
-    }
-
-    public void setValueAt(int x, int y, boolean value) {
-        grid[x][y] = value ? INITIAL_INTENSITY : 0.0;
     }
 
     public void setIntensityAt(int x, int y, double intensity) {
