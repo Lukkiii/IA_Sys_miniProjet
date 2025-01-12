@@ -17,7 +17,7 @@
 
 1. Compiler les fichiers Java :
     ```sh
-    
+    javac -d class src/*.java
     ```
 
 2. Exécuter la simulation :
