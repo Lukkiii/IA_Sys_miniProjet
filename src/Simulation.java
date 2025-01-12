@@ -22,6 +22,7 @@ public class Simulation {
 
     public void start() {
         isRunning = true;
+        // Scheduler le processus de propagation du feu toutes les 800 ms
         executor.scheduleAtFixedRate(() -> {
             if (isRunning) {
                 fire.spread();
@@ -31,6 +32,7 @@ public class Simulation {
         }, 0, 800, TimeUnit.MILLISECONDS);
     }
 
+    // Générer les informations de simulation
     private String generateSimulationInfo() {
         StringBuilder info = new StringBuilder();
         info.append("=== Simulation Status ===\n");
@@ -38,7 +40,7 @@ public class Simulation {
         info.append("Grid Size: ").append(GRID_WIDTH).append("x").append(GRID_HEIGHT).append("\n");
         info.append("HQ Position: [").append(HQ_X).append(",").append(HQ_Y).append("]\n\n");
 
-        // Count active fires
+        // Compter le nombre de feux actifs
         double[][] intensityMap = fire.getIntensityMap();
         int fireCount = 0;
         for (int i = 0; i < GRID_WIDTH; i++) {

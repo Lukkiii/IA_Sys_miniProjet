@@ -25,7 +25,7 @@ public class Fire {
         while (attempts < maxAttempts) {
             int x = random.nextInt(fireGrid.getWidth());
             int y = random.nextInt(fireGrid.getHeight());
-            // Ne pas créer de feu près des headquarters
+            // Ne pas créer de feu près du quartier général
             if (!isNearHQ(x, y)) {
                 // Intensité initiale du feu
                 double initialIntensity = FireGrid.INITIAL_INTENSITY * (0.8 + random.nextDouble() * 0.2);
@@ -98,7 +98,7 @@ public class Fire {
         }
     }
 
-    // Vérifier si la cellule est proche des headquarters
+    // Vérifier si la cellule est proche de quartier général
     private boolean isNearHQ(int x, int y) {
         int hqX = 15;
         int hqY = 15;
@@ -112,16 +112,16 @@ public class Fire {
     }
 
     // Récupérer la carte du feu sous forme de booléens
-    public boolean[][] getFireMap() {
-        boolean[][] boolMap = new boolean[fireGrid.getWidth()][fireGrid.getHeight()];
-        double[][] intensityMap = fireGrid.getIntensityGrid();
-        for (int i = 0; i < fireGrid.getWidth(); i++) {
-            for (int j = 0; j < fireGrid.getHeight(); j++) {
-                boolMap[i][j] = intensityMap[i][j] > FireGrid.INTENSITY_THRESHOLD;
-            }
-        }
-        return boolMap;
-    }
+    // public boolean[][] getFireMap() {
+    //     boolean[][] boolMap = new boolean[fireGrid.getWidth()][fireGrid.getHeight()];
+    //     double[][] intensityMap = fireGrid.getIntensityGrid();
+    //     for (int i = 0; i < fireGrid.getWidth(); i++) {
+    //         for (int j = 0; j < fireGrid.getHeight(); j++) {
+    //             boolMap[i][j] = intensityMap[i][j] > FireGrid.INTENSITY_THRESHOLD;
+    //         }
+    //     }
+    //     return boolMap;
+    // }
 
     // Récupérer la carte d'intensité du feu
     public double[][] getIntensityMap() {

@@ -60,24 +60,24 @@ public class SimulationGUI extends JFrame {
         private Color getFireColor(double intensity) {
             if (intensity <= FireGrid.INTENSITY_THRESHOLD) return Color.WHITE;
 
-            // Normalize intensity to 0-1 range
+            // Normaliser l'intensité pour obtenir une valeur entre 0 et 1
             double normalized = (intensity - FireGrid.INTENSITY_THRESHOLD) / 
                               (FireGrid.MAX_INTENSITY - FireGrid.INTENSITY_THRESHOLD);
             
-            // Create color gradient from yellow to orange to red
+            // Définir les couleurs en fonction de l'intensité normalisée
             if (normalized < 0.3) {
-                // Yellow to Orange
+                // Jaune à Orange
                 return new Color(255, 
                                (int)(255 * (1 - normalized/0.3)), 
                                0, 200);
             } else if (normalized < 0.7) {
-                // Orange to Red
+                // Orange à Rouge
                 normalized = (normalized - 0.3) / 0.4;
                 return new Color(255, 
                                (int)(140 * (1 - normalized)), 
                                0, 200);
             } else {
-                // Deep Red
+                // Rouge foncé
                 normalized = (normalized - 0.7) / 0.3;
                 return new Color(255 - (int)(55 * normalized),
                                0,
@@ -91,7 +91,7 @@ public class SimulationGUI extends JFrame {
             Graphics2D g2d = (Graphics2D) g;
             g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-            // Draw grid
+            // Dessiner la grille
             g2d.setColor(new Color(220, 220, 220));
             for (int i = 0; i <= width; i++) {
                 g2d.drawLine(i * cellSize, 0, i * cellSize, height * cellSize);
@@ -100,7 +100,7 @@ public class SimulationGUI extends JFrame {
                 g2d.drawLine(0, j * cellSize, width * cellSize, j * cellSize);
             }
 
-            // Draw fires with intensity-based colors
+            // Dessiner les cases en feu avec des couleurs basées sur l'intensité
             if (intensityMap != null) {
                 for (int i = 0; i < width; i++) {
                     for (int j = 0; j < height; j++) {
@@ -113,7 +113,7 @@ public class SimulationGUI extends JFrame {
                 }
             }
 
-            // Draw HQ
+            // Dessiner le quartier général
             g2d.setColor(new Color(0, 150, 0));
             g2d.fillRect(hqX * cellSize, hqY * cellSize, cellSize, cellSize);
             g2d.setColor(Color.WHITE);
