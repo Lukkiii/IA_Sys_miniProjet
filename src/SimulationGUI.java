@@ -6,6 +6,7 @@ public class SimulationGUI extends JFrame {
     private JTextArea infoPanel;
     private final int hqX;
     private final int hqY;
+    private Robot robot;
 
     public SimulationGUI(int width, int height, int hqX, int hqY) {
         setTitle("Fire Spread Simulation");
@@ -13,6 +14,7 @@ public class SimulationGUI extends JFrame {
         
         this.hqX = hqX;
         this.hqY = hqY;
+        this.robot = null;
         
         JPanel mainPanel = new JPanel(new BorderLayout());
         
@@ -34,8 +36,10 @@ public class SimulationGUI extends JFrame {
         setVisible(true);
     }
 
-    public void updateDisplay(double[][] intensityMap, String info) {
+    public void updateDisplay(double[][] intensityMap, String info, Robot robot) {
+        this.robot = robot;
         simulationPanel.updateState(intensityMap);
+        simulationPanel.updateRobot(robot);
         infoPanel.setText(info);
         simulationPanel.repaint();
     }
@@ -45,6 +49,7 @@ public class SimulationGUI extends JFrame {
         private final int width;
         private final int height;
         private final int cellSize = 20;
+        private Robot robot;
 
         public SimulationPanel(int width, int height) {
             this.width = width;
@@ -55,6 +60,10 @@ public class SimulationGUI extends JFrame {
 
         public void updateState(double[][] intensityMap) {
             this.intensityMap = intensityMap;
+        }
+
+        public void updateRobot(Robot robot) {
+            this.robot = robot;
         }
 
         private Color getFireColor(double intensity) {
@@ -123,6 +132,24 @@ public class SimulationGUI extends JFrame {
             int textX = hqX * cellSize + (cellSize - fm.stringWidth(hqText)) / 2;
             int textY = hqY * cellSize + (cellSize + fm.getAscent()) / 2;
             g2d.drawString(hqText, textX, textY);
+
+            // Dessiner le robot
+            if (robot != null) {
+                g2d.setColor(Color.BLUE);
+                int robotSize = cellSize - 4;
+                int x = robot.getX() * cellSize + (cellSize - robotSize) / 2;
+                int y = robot.getY() * cellSize + (cellSize - robotSize) / 2;
+                
+                g2d.fillOval(x, y, robotSize, robotSize);
+                
+                if (robot.getState().equals("extinguishing")) {
+                    g2d.setColor(Color.CYAN);
+                    int indicatorSize = 6;
+                    g2d.fillOval(x + robotSize/2 - indicatorSize/2, 
+                                y + robotSize/2 - indicatorSize/2, 
+                                indicatorSize, indicatorSize);
+                }
+            }
         }
     }
 }

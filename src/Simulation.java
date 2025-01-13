@@ -13,11 +13,13 @@ public class Simulation {
     private static final int HQ_X = 15;
     private static final int HQ_Y = 15;
     private int timeStep = 0;
+    private Robot robot;
 
     public Simulation() {
         this.fire = new Fire(GRID_WIDTH, GRID_HEIGHT);
         this.gui = new SimulationGUI(GRID_WIDTH, GRID_HEIGHT, HQ_X, HQ_Y);
         this.executor = Executors.newScheduledThreadPool(1);
+        this.robot = new Robot(HQ_X, HQ_Y);
     }
 
     public void start() {
@@ -26,10 +28,51 @@ public class Simulation {
         executor.scheduleAtFixedRate(() -> {
             if (isRunning) {
                 fire.spread();
+                updateRobot();
                 timeStep++;
                 updateGUI();
             }
         }, 0, 800, TimeUnit.MILLISECONDS);
+    }
+
+    private void updateRobot() {
+        double[][] intensityMap = fire.getIntensityMap();
+        
+        if (robot.getState().equals("searching")) {
+            int[] nearestFire = findNearestFire(intensityMap, robot.getX(), robot.getY());
+            if (nearestFire != null) {
+                robot.moveTowards(nearestFire[0], nearestFire[1]);
+                if (robot.getX() == nearestFire[0] && robot.getY() == nearestFire[1]) {
+                    robot.setState("extinguishing");
+                }
+            }
+        } 
+        else if (robot.getState().equals("extinguishing")) {
+            if (intensityMap[robot.getX()][robot.getY()] <= FireGrid.INTENSITY_THRESHOLD) {
+                robot.setState("searching");
+            } else {
+                robot.extinguishFire(fire.getFireGrid());
+            }
+        }
+    }
+
+    private int[] findNearestFire(double[][] intensityMap, int startX, int startY) {
+        int[] nearest = null;
+        double minDistance = Double.MAX_VALUE;
+        
+        for (int i = 0; i < GRID_WIDTH; i++) {
+            for (int j = 0; j < GRID_HEIGHT; j++) {
+                if (intensityMap[i][j] > FireGrid.INTENSITY_THRESHOLD) {
+                    double distance = Math.sqrt(Math.pow(i - startX, 2) + Math.pow(j - startY, 2));
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearest = new int[]{i, j};
+                    }
+                }
+            }
+        }
+        
+        return nearest;
     }
 
     // Générer les informations de simulation
@@ -39,6 +82,8 @@ public class Simulation {
         info.append("Time Step: ").append(timeStep).append("\n");
         info.append("Grid Size: ").append(GRID_WIDTH).append("x").append(GRID_HEIGHT).append("\n");
         info.append("HQ Position: [").append(HQ_X).append(",").append(HQ_Y).append("]\n\n");
+        info.append("Robot Position: [").append(robot.getX()).append(",").append(robot.getY()).append("]\n");
+        info.append("Robot State: ").append(robot.getState()).append("\n\n");
 
         // Compter le nombre de feux actifs
         double[][] intensityMap = fire.getIntensityMap();
@@ -63,7 +108,7 @@ public class Simulation {
 
     private void updateGUI() {
         SwingUtilities.invokeLater(() -> {
-            gui.updateDisplay(fire.getIntensityMap(), generateSimulationInfo());
+            gui.updateDisplay(fire.getIntensityMap(), generateSimulationInfo(), robot);
         });
     }
 
