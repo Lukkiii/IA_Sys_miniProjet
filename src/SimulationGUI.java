@@ -6,7 +6,6 @@ public class SimulationGUI extends JFrame {
     private JTextArea infoPanel;
     private final int hqX;
     private final int hqY;
-    private Robot robot;
 
     public SimulationGUI(int width, int height, int hqX, int hqY) {
         setTitle("Fire Spread Simulation");
@@ -14,7 +13,6 @@ public class SimulationGUI extends JFrame {
         
         this.hqX = hqX;
         this.hqY = hqY;
-        this.robot = null;
         
         JPanel mainPanel = new JPanel(new BorderLayout());
         
@@ -37,7 +35,6 @@ public class SimulationGUI extends JFrame {
     }
 
     public void updateDisplay(double[][] intensityMap, String info, Robot robot) {
-        this.robot = robot;
         simulationPanel.updateState(intensityMap);
         simulationPanel.updateRobot(robot);
         infoPanel.setText(info);
