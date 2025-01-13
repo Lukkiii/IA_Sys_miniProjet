@@ -3,7 +3,7 @@ public class Robot {
     private int y;
     private String state;
     private static final int EXTINGUISH_RADIUS = 10;
-    private static final double EXTINGUISH_AMOUNT = 25.0;
+    private static final double EXTINGUISH_AMOUNT = 35.0;
 
     public Robot(int x, int y) {
         this.x = x;

@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SimulationGUI extends JFrame {
     private SimulationPanel simulationPanel;
@@ -34,9 +36,9 @@ public class SimulationGUI extends JFrame {
         setVisible(true);
     }
 
-    public void updateDisplay(double[][] intensityMap, String info, Robot robot) {
+    public void updateDisplay(double[][] intensityMap, String info, List<Robot> robots) {
         simulationPanel.updateState(intensityMap);
-        simulationPanel.updateRobot(robot);
+        simulationPanel.updateRobots(robots);
         infoPanel.setText(info);
         simulationPanel.repaint();
     }
@@ -46,7 +48,7 @@ public class SimulationGUI extends JFrame {
         private final int width;
         private final int height;
         private final int cellSize = 20;
-        private Robot robot;
+        private List<Robot> robots = new ArrayList<>();
 
         public SimulationPanel(int width, int height) {
             this.width = width;
@@ -59,8 +61,8 @@ public class SimulationGUI extends JFrame {
             this.intensityMap = intensityMap;
         }
 
-        public void updateRobot(Robot robot) {
-            this.robot = robot;
+        public void updateRobots(List<Robot> robots) {
+            this.robots = robots;
         }
 
         private Color getFireColor(double intensity) {
@@ -131,13 +133,24 @@ public class SimulationGUI extends JFrame {
             g2d.drawString(hqText, textX, textY);
 
             // Dessiner le robot
-            if (robot != null) {
-                g2d.setColor(Color.BLUE);
+            for (int i = 0; i < robots.size(); i++) {
+                Robot robot = robots.get(i);
+                float hue = 0.6f + (i * 0.05f);
+                Color robotColor = Color.getHSBColor(hue, 0.8f, 0.9f);
+                g2d.setColor(robotColor);
+                
                 int robotSize = cellSize - 4;
                 int x = robot.getX() * cellSize + (cellSize - robotSize) / 2;
                 int y = robot.getY() * cellSize + (cellSize - robotSize) / 2;
                 
                 g2d.fillOval(x, y, robotSize, robotSize);
+                
+                g2d.setColor(Color.WHITE);
+                g2d.setFont(new Font("Arial", Font.BOLD, 10));
+                String robotNum = String.valueOf(i + 1);
+                int textX_robot = x + (robotSize - fm.stringWidth(robotNum)) / 2;
+                int textY_robot = y + (robotSize + fm.getAscent()) / 2;
+                g2d.drawString(robotNum, textX_robot, textY_robot);
                 
                 if (robot.getState().equals("extinguishing")) {
                     g2d.setColor(Color.CYAN);
