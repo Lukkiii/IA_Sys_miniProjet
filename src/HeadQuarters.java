@@ -1,19 +1,22 @@
 import java.util.*;
 
 public class HeadQuarters {
+
+    private static final long REPORT_EXPIRATION_TIME = 10000;
+    private static final int MAX_ROBOTS = 7;
+    private static final int INITIAL_SCOUTS = 2;
+
     private int x;
     private int y;
     private double[][] globalFireMap;
-    private Map<Integer, List<FireSpot>> robotReports = new HashMap<>();
-    private Map<FireSpot, Firefighter> fireAssignments = new HashMap<>();
-
-    private static final int MAX_ROBOTS = 7;
-    private static final int INITIAL_SCOUTS = 2;
-    private List<Firefighter> firefighters = new ArrayList<>();
     private Fire fire;
     private int gridWidth;
     private int gridHeight;
-
+    private Map<Integer, List<FireSpot>> robotReports = new HashMap<>();
+    private Map<FireSpot, Firefighter> fireAssignments = new HashMap<>();
+    private Map<FireSpot, Long> reportTimes = new HashMap<>();
+    private List<Firefighter> firefighters = new ArrayList<>();
+    
     public HeadQuarters(int x, int y, int width, int height, Fire fire) {
         this.x = x;
         this.y = y;
@@ -36,7 +39,7 @@ public class HeadQuarters {
         }
 
         int neededFirefighters = Math.min(MAX_ROBOTS - INITIAL_SCOUTS,
-                                        (int)Math.ceil(activeFireCount / 50.0));
+                                        (int)Math.ceil(activeFireCount / 10.0));
     
         if (firefighters.size() < neededFirefighters) {
             Firefighter newFirefighter = createNewFirefighter();
@@ -55,21 +58,48 @@ public class HeadQuarters {
 
     // Used by Scouts to report fire locations
     public void receiveFireReport(int robotId, List<FireSpot> spots) {
-        robotReports.put(robotId, spots);
-        // Update global map with new fire information
+        long currentTime = System.currentTimeMillis();
+
+        List<FireSpot> updatedSpots = new ArrayList<>();
         for (FireSpot spot : spots) {
-            globalFireMap[spot.x][spot.y] = spot.intensity;
+            if (fire.getIntensityMap()[spot.x][spot.y] > FireGrid.INTENSITY_THRESHOLD) {
+                updatedSpots.add(spot);
+                reportTimes.put(spot, currentTime);
+                globalFireMap[spot.x][spot.y] = spot.intensity;
+            }
+        }
+
+        if (!updatedSpots.isEmpty()) {
+            robotReports.put(robotId, updatedSpots);
+            updateFirefighterAssignments();
         }
         
-        // Immediately update assignments when new fires are reported
+        cleanupOldReports();
+    }
+
+    private void cleanupOldReports() {
+        long currentTime = System.currentTimeMillis();
+        
+        reportTimes.entrySet().removeIf(entry -> 
+            currentTime - entry.getValue() > REPORT_EXPIRATION_TIME);
+            
+        robotReports.values().forEach(spots -> spots.removeIf(spot -> 
+            !reportTimes.containsKey(spot) || 
+            fire.getIntensityMap()[spot.x][spot.y] <= FireGrid.INTENSITY_THRESHOLD));
+            
+        robotReports.entrySet().removeIf(entry -> entry.getValue().isEmpty());
+        
         updateFirefighterAssignments();
     }
     
     public int[] getFirefighterAssignment(Firefighter firefighter) {
+        cleanupOldReports();
+
         List<FireSpot> unassignedFires = new ArrayList<>();
         for (List<FireSpot> spots : robotReports.values()) {
             for (FireSpot spot : spots) {
-                if (!fireAssignments.containsKey(spot)) {
+                if (!fireAssignments.containsKey(spot) && 
+                    fire.getIntensityMap()[spot.x][spot.y] > FireGrid.INTENSITY_THRESHOLD) {
                     unassignedFires.add(spot);
                 }
             }
@@ -105,7 +135,8 @@ public class HeadQuarters {
     public void updateFirefighterAssignments() {
         fireAssignments.entrySet().removeIf(entry -> {
             FireSpot spot = entry.getKey();
-            return globalFireMap[spot.x][spot.y] <= FireGrid.INTENSITY_THRESHOLD;
+            return fire.getIntensityMap()[spot.x][spot.y] <= FireGrid.INTENSITY_THRESHOLD ||
+                   !reportTimes.containsKey(spot);
         });
     }
 

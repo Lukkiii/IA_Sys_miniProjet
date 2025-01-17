@@ -31,14 +31,6 @@ public abstract class Robot {
     public abstract void updateState(HeadQuarters hq);
     public abstract String getType();
 
-    // Common methods for all robots
-    public void moveTowards(int targetX, int targetY) {
-        if (x < targetX) x++;
-        else if (x > targetX) x--;
-        if (y < targetY) y++;
-        else if (y > targetY) y--;        
-    }
-
     protected boolean isAtHQ() {
         boolean atHQ = x == 15 && y == 15;
         if (atHQ) {
