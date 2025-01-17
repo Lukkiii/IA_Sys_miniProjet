@@ -100,8 +100,8 @@ public class Fire {
 
     // Vérifier si la cellule est proche de quartier général
     private boolean isNearHQ(int x, int y) {
-        int hqX = 15;
-        int hqY = 15;
+        int hqX = HeadQuarters.HQ_X;
+        int hqY = HeadQuarters.HQ_Y;
         int safeDistance = 5;
         double distance = Math.sqrt(Math.pow(x - hqX, 2) + Math.pow(y - hqY, 2));
         return distance < safeDistance;

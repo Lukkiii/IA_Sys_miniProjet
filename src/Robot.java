@@ -49,7 +49,7 @@ public abstract class Robot {
     }
 
     protected boolean isAtHQ() {
-        boolean atHQ = x == 15 && y == 15;
+        boolean atHQ = x == HeadQuarters.HQ_X  && y == HeadQuarters.HQ_Y;
         if (atHQ) {
             currentState = State.AT_HQ;
         }
@@ -64,6 +64,7 @@ public abstract class Robot {
                     localKnowledge[i][j] = globalMap[i][j];
                 }
             }
+            operationStartTime = System.currentTimeMillis();
         }
     }
 
@@ -72,6 +73,9 @@ public abstract class Robot {
     }
 
     protected boolean needsRecharge() {
+        if (currentState == State.RECHARGING_ELECTRICITY) {
+            return false;
+        }
         return System.currentTimeMillis() - operationStartTime >= MAX_OPERATION_TIME;
     }
 

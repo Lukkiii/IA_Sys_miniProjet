@@ -2,8 +2,6 @@ import java.util.*;
 
 public class Scout extends Robot {
     private static final int VISION_RANGE = 5;
-    private static final int GRID_WIDTH = 30;
-    private static final int GRID_HEIGHT = 30;
     private static final int MAX_PREVIOUS_TARGETS = 5;
     private static final long FIRE_RECHECK_INTERVAL = 5000;
     private static final double FIRE_RECHECK_PROBABILITY = 0.3;
@@ -35,7 +33,6 @@ public class Scout extends Robot {
         if (currentState == State.RECHARGING_ELECTRICITY) {
             if (isRechargeComplete()) {
                 finishRecharge();
-                currentState = State.AT_HQ;
             } else {
                 reportFiresIfFound(hq);
                 return;
@@ -50,7 +47,6 @@ public class Scout extends Robot {
         }
 
         if (isAtHQ() && needsRecharge()) {
-            currentState = State.RECHARGING_ELECTRICITY;
             startRecharge();
             reportFiresIfFound(hq);
             return;
@@ -204,8 +200,8 @@ public class Scout extends Robot {
         double bestScore = Double.NEGATIVE_INFINITY;
         
         for (int attempts = 0; attempts < 20; attempts++) {
-            int candidateX = random.nextInt(GRID_WIDTH);
-            int candidateY = random.nextInt(GRID_HEIGHT);
+            int candidateX = random.nextInt(HeadQuarters.getGridWidth());
+            int candidateY = random.nextInt(HeadQuarters.getGridHeight());
             
             double score = evaluateTarget(candidateX, candidateY);
             if (score > bestScore) {

@@ -7,14 +7,8 @@ import javax.swing.SwingUtilities;
 
 public class Simulation {
 
-    private static final int FIRE_UPDATE_INTERVAL = 2500;
+    private static final int FIRE_UPDATE_INTERVAL = 2000;
     private static final int ROBOT_UPDATE_INTERVAL = 300;
-    private static final int GRID_WIDTH = 30;
-    private static final int GRID_HEIGHT = 30;
-    private static final int HQ_X = 15;
-    private static final int HQ_Y = 15;
-
-    private static final int INITIAL_SCOUTS = 2;
 
     private Fire fire;
     private HeadQuarters hq;
@@ -27,9 +21,11 @@ public class Simulation {
     private List<Robot> robots;
 
     public Simulation() {
-        this.fire = new Fire(GRID_WIDTH, GRID_HEIGHT);
-        this.hq = new HeadQuarters(HQ_X, HQ_Y, GRID_WIDTH, GRID_HEIGHT, fire);
-        this.gui = new SimulationGUI(GRID_WIDTH, GRID_HEIGHT, HQ_X, HQ_Y);
+        this.fire = new Fire(HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight());
+        this.hq = new HeadQuarters(HeadQuarters.getHqX(), HeadQuarters.getHqY(), 
+                                 HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight(), fire);
+        this.gui = new SimulationGUI(HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight(), 
+                                   HeadQuarters.getHqX(), HeadQuarters.getHqY());
         this.isRunning = false;
         this.fireExecutor = Executors.newScheduledThreadPool(1);
         this.robotExecutor = Executors.newScheduledThreadPool(1);
@@ -40,8 +36,9 @@ public class Simulation {
     private void initializeRobots() {
         int id = 0;
         // Add initial scouts
-        for (int i = 0; i < INITIAL_SCOUTS; i++) {
-            robots.add(new Scout(id++, HQ_X, HQ_Y, GRID_WIDTH, GRID_HEIGHT));
+        for (int i = 0; i < HeadQuarters.INITIAL_SCOUTS; i++) {
+            robots.add(new Scout(id++, HeadQuarters.getHqX(), HeadQuarters.getHqY(), 
+                               HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight()));
         }
     }
 
@@ -113,8 +110,8 @@ public class Simulation {
         StringBuilder info = new StringBuilder();
         info.append("=== Simulation Status ===\n");
         info.append("Time Step: ").append(timeStep).append("\n");
-        info.append("Grid Size: ").append(GRID_WIDTH).append("x").append(GRID_HEIGHT).append("\n");
-        info.append("HQ Position: [").append(HQ_X).append(",").append(HQ_Y).append("]\n\n");
+        info.append("Grid Size: ").append(HeadQuarters.GRID_WIDTH).append("x").append(HeadQuarters.GRID_HEIGHT).append("\n");
+        info.append("HQ Position: [").append(HeadQuarters.HQ_X).append(",").append(HeadQuarters.HQ_Y).append("]\n\n");
         
         info.append("=== Robots Status ===\n");
         long scoutCount = robots.stream().filter(r -> r instanceof Scout).count();
@@ -131,8 +128,8 @@ public class Simulation {
 
         double[][] intensityMap = fire.getIntensityMap();
         int fireCount = 0;
-        for (int i = 0; i < GRID_WIDTH; i++) {
-            for (int j = 0; j < GRID_HEIGHT; j++) {
+        for (int i = 0; i < HeadQuarters.GRID_WIDTH; i++) {
+            for (int j = 0; j < HeadQuarters.GRID_HEIGHT; j++) {
                 if (intensityMap[i][j] > FireGrid.INTENSITY_THRESHOLD) {
                     fireCount++;
                 }

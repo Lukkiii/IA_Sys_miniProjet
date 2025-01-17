@@ -2,9 +2,14 @@ import java.util.*;
 
 public class HeadQuarters {
 
-    private static final long REPORT_EXPIRATION_TIME = 10000;
-    private static final int MAX_ROBOTS = 7;
-    private static final int INITIAL_SCOUTS = 2;
+    public static final long REPORT_EXPIRATION_TIME = 10000;
+    public static final int MAX_ROBOTS = 7;
+    public static final int INITIAL_SCOUTS = 2;
+    public static final int GRID_WIDTH = 24;
+    public static final int GRID_HEIGHT = 24;
+    public static final int HQ_X = 12;
+    public static final int HQ_Y = 12;
+    public static final int SAFE_DISTANCE = 4;
 
     private int x;
     private int y;
@@ -155,5 +160,11 @@ public class HeadQuarters {
     public double[][] getGlobalMap() {
         return globalFireMap.clone();
     }
+
+    public static int getGridWidth() { return GRID_WIDTH; }
+    public static int getGridHeight() { return GRID_HEIGHT; }
+    public static int getHqX() { return HQ_X; }
+    public static int getHqY() { return HQ_Y; }
+    public static int getSafeDistance() { return SAFE_DISTANCE; }
 
 }
