@@ -28,7 +28,7 @@ public abstract class Robot {
     }
 
     // Abstract method to be implemented by specific robot types
-    public abstract void updateState(HeadQuarters hq, double[][] intensityMap);
+    public abstract void updateState(HeadQuarters hq);
     public abstract String getType();
 
     // Common methods for all robots
@@ -47,10 +47,6 @@ public abstract class Robot {
         return atHQ;
     }
 
-    protected boolean isValidPosition(int x, int y, double[][] map) {
-        return x >= 0 && x < map.length && y >= 0 && y < map[0].length;
-    }
-
     protected void updateLocalKnowledge(HeadQuarters hq) {
         if (isAtHQ()) {
             double[][] globalMap = hq.getGlobalMap();
@@ -60,6 +56,10 @@ public abstract class Robot {
                 }
             }
         }
+    }
+
+    protected boolean isValidPosition(int x, int y) {
+        return x >= 0 && x < localKnowledge.length && y >= 0 && y < localKnowledge[0].length;
     }
     
     // Getters and setters

@@ -54,8 +54,6 @@ public class Simulation {
 
     // Mettre à jour les robots
     private void updateRobots() {
-        double[][] intensityMap = fire.getIntensityMap();
-
         Firefighter newRobot = hq.checkAndAddFirefighter();
         if (newRobot != null) {
             newRobot.setFireGrid(fire.getFireGrid());
@@ -64,13 +62,16 @@ public class Simulation {
         
         for (Robot robot : robots) {
             if (robot instanceof Scout) {
-                ((Scout)robot).updateState(hq, intensityMap);
+                if (((Scout)robot).getFireGrid() == null) {
+                    ((Scout)robot).setFireGrid(fire.getFireGrid());
+                }
+                ((Scout)robot).updateState(hq);
             } else if (robot instanceof Firefighter) {
-                ((Firefighter)robot).updateState(hq, intensityMap);
+                ((Firefighter)robot).updateState(hq);
             }
         }
         
-        hq.updateGlobalMap(intensityMap);
+        hq.updateGlobalMap(fire.getIntensityMap());
     }
 
     // Démarrer la simulation

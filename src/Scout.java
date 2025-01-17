@@ -7,13 +7,12 @@ public class Scout extends Robot {
     private int targetX;
     private int targetY;
     private Random random;
+    private FireGrid fireGrid;
 
     public Scout(int id, int x, int y, int gridWidth, int gridHeight) {
         super(id, x, y, gridWidth, gridHeight);
         this.random = new Random();
-        // Initial random target
-        this.targetX = random.nextInt(gridWidth);
-        this.targetY = random.nextInt(gridHeight);
+        setNewExplorationTarget();
     }
 
     @Override
@@ -22,39 +21,62 @@ public class Scout extends Robot {
     }
 
     @Override
-    public void updateState(HeadQuarters hq, double[][] intensityMap) {
-        // Scan area for fires
-        scanArea(intensityMap);
+    public void updateState(HeadQuarters hq) {
+        List<FireSpot> newFires = scanArea();
+        if (!newFires.isEmpty()) {
+            hq.receiveFireReport(id, newFires);
+            discoveredFires.clear();
+        }
 
-        // Always report fires if found
-        List<FireSpot> reports = reportDiscoveredFires();
-        if (!reports.isEmpty()) {
-            hq.receiveFireReport(id, reports);
+        if (isAtHQ()) {
+            updateLocalKnowledge(hq);
         }
 
         // Move to new exploration target
-        if (Math.abs(x - targetX) <= 1 && Math.abs(y - targetY) <= 1 || random.nextDouble() < 0.1) {
-            targetX = random.nextInt(GRID_WIDTH);
-            targetY = random.nextInt(GRID_HEIGHT);
+        if (random.nextDouble() < 0.1) {
+            setNewExplorationTarget();
         }
         moveTowards(targetX, targetY);
         currentState = State.SCOUTING;
     }
 
-    private void scanArea(double[][] intensityMap) {
+    private List<FireSpot> scanArea() {
         for (int dx = -VISION_RANGE; dx <= VISION_RANGE; dx++) {
             for (int dy = -VISION_RANGE; dy <= VISION_RANGE; dy++) {
                 int newX = x + dx;
                 int newY = y + dy;
-                if (isValidPosition(newX, newY, intensityMap)) {
-                    if (intensityMap[newX][newY] > FireGrid.INTENSITY_THRESHOLD) {
+                
+                if (isValidPosition(newX, newY)) {
+                    double intensity = observeFireIntensity(newX, newY);
+                    if (intensity > FireGrid.INTENSITY_THRESHOLD) {
                         discoveredFires.add(new FireSpot(newX, newY, 
-                                          intensityMap[newX][newY], 
+                                          intensity, 
                                           System.currentTimeMillis()));
                     }
                 }
             }
         }
+        return new ArrayList<>(discoveredFires);
+    }
+
+    private double observeFireIntensity(int x, int y) {
+        if (fireGrid != null) {
+            return fireGrid.getIntensityAt(x, y);
+        }
+        return 0.0;
+    }
+
+    private void setNewExplorationTarget() {
+        targetX = random.nextInt(GRID_WIDTH);
+        targetY = random.nextInt(GRID_HEIGHT);
+    }
+
+    public void setFireGrid(FireGrid fireGrid) {
+        this.fireGrid = fireGrid;
+    }
+
+    public FireGrid getFireGrid() {
+        return fireGrid;
     }
 
     List<FireSpot> reportDiscoveredFires() {
