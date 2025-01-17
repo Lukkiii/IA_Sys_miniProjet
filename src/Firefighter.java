@@ -1,12 +1,16 @@
 public class Firefighter extends Robot {
     private static final int VISION_RANGE = 3;
     private static final int EXTINGUISH_RADIUS = 10;
-    private static final double EXTINGUISH_AMOUNT = 15.0;
+    private static final double EXTINGUISH_AMOUNT = 35.0;
+    private static final int MAX_EXTINGUISHING_TIME = 20;
+    private static final int MAX_MOVING_TIME = 20;
+
     private FireGrid fireGrid;
     private int targetX = -1;
     private int targetY = -1;
     private int extinguishingTime = 0;
-    private static final int MAX_EXTINGUISHING_TIME = 20;
+    private int movingTime = 0;
+    
 
     public Firefighter(int id, int x, int y, int gridWidth, int gridHeight) {
         super(id, x, y, gridWidth, gridHeight);
@@ -21,7 +25,10 @@ public class Firefighter extends Robot {
     public void updateState(HeadQuarters hq) {
         if (isAtHQ()) {
             extinguishingTime = 0;
+            movingTime = 0;
+
             updateLocalKnowledge(hq);
+
             int[] target = hq.getFirefighterAssignment(this);
             if (target != null) {
                 targetX = target[0];
@@ -30,7 +37,11 @@ public class Firefighter extends Robot {
                 moveSmartlyTowards(targetX, targetY);
             }
         } else if (currentState == State.MOVING_TO_FIRE) {
-            if (isNearFireDirect()) {
+            movingTime++;
+            if (movingTime >= MAX_MOVING_TIME) {
+                returnToHQ();
+            } else if (isNearFireDirect()) {
+                movingTime = 0;
                 currentState = State.EXTINGUISHING;
                 extinguishFire();
             } else {
