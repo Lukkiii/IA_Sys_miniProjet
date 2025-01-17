@@ -1,49 +1,71 @@
-public class Robot {
-    private int x;
-    private int y;
-    private String state;
-    private static final int EXTINGUISH_RADIUS = 10;
-    private static final double EXTINGUISH_AMOUNT = 35.0;
+import java.util.ArrayList;
+import java.util.List;
 
-    public Robot(int x, int y) {
-        this.x = x;
-        this.y = y;
-        this.state = "searching";
+public abstract class Robot {
+
+    protected enum State {
+        AT_HQ, MOVING_TO_FIRE, MOVING_TO_HQ, EXTINGUISHING, SCOUTING
     }
 
+    protected int id;
+    protected int x;
+    protected int y;
+    protected List<FireSpot> discoveredFires;
+    protected double[][] localKnowledge;
+    protected State currentState = State.AT_HQ;
+    
+    // Robot types
+    public static final String TYPE_SCOUT = "scout";
+    public static final String TYPE_FIREFIGHTER = "firefighter";
+    
+
+    public Robot(int id, int x, int y, int gridWidth, int gridHeight) {
+        this.id = id;
+        this.x = x;
+        this.y = y;
+        this.discoveredFires = new ArrayList<>();
+        this.localKnowledge = new double[gridWidth][gridHeight];
+    }
+
+    // Abstract method to be implemented by specific robot types
+    public abstract void updateState(HeadQuarters hq, double[][] intensityMap);
+    public abstract String getType();
+
+    // Common methods for all robots
     public void moveTowards(int targetX, int targetY) {
         if (x < targetX) x++;
         else if (x > targetX) x--;
-
         if (y < targetY) y++;
-        else if (y > targetY) y--;
+        else if (y > targetY) y--;        
     }
 
-    public void extinguishFire(FireGrid grid) {
-        int gridWidth = grid.getWidth();
-        int gridHeight = grid.getHeight();
-        
-        for (int dx = -EXTINGUISH_RADIUS; dx <= EXTINGUISH_RADIUS; dx++) {
-            for (int dy = -EXTINGUISH_RADIUS; dy <= EXTINGUISH_RADIUS; dy++) {
-                int newX = x + dx;
-                int newY = y + dy;
-                
-                if (newX >= 0 && newX < gridWidth && newY >= 0 && newY < gridHeight) {
-                    
-                    double distance = Math.sqrt(dx * dx + dy * dy);
-                    if (distance <= EXTINGUISH_RADIUS) {
-                        
-                        double effect = EXTINGUISH_AMOUNT * (1.0 - (distance / (EXTINGUISH_RADIUS + 1)));
-                        grid.decreaseIntensity(newX, newY, effect);
-                    }
+    protected boolean isAtHQ() {
+        boolean atHQ = x == 15 && y == 15;
+        if (atHQ) {
+            currentState = State.AT_HQ;
+        }
+        return atHQ;
+    }
+
+    protected boolean isValidPosition(int x, int y, double[][] map) {
+        return x >= 0 && x < map.length && y >= 0 && y < map[0].length;
+    }
+
+    protected void updateLocalKnowledge(HeadQuarters hq) {
+        if (isAtHQ()) {
+            double[][] globalMap = hq.getGlobalMap();
+            for (int i = 0; i < localKnowledge.length; i++) {
+                for (int j = 0; j < localKnowledge[0].length; j++) {
+                    localKnowledge[i][j] = globalMap[i][j];
                 }
             }
         }
     }
-
+    
+    // Getters and setters
     public int getX() { return x; }
     public int getY() { return y; }
-    public void setState(String state) { this.state = state; }
-    public String getState() { return state; }
+    public int getId() { return id; }
+
 }
 

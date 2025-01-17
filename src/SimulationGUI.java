@@ -133,32 +133,52 @@ public class SimulationGUI extends JFrame {
             g2d.drawString(hqText, textX, textY);
 
             // Dessiner le robot
-            for (int i = 0; i < robots.size(); i++) {
-                Robot robot = robots.get(i);
-                float hue = 0.6f + (i * 0.05f);
-                Color robotColor = Color.getHSBColor(hue, 0.8f, 0.9f);
-                g2d.setColor(robotColor);
-                
+            for (Robot robot : robots) {
+                Color robotColor;
+                String robotStatus = "";
+    
+                if (robot instanceof Scout) {
+                    robotColor = Color.BLUE;
+                    robotStatus = "Scouting";
+                } else if (robot instanceof Firefighter) {
+                    if (robot.isAtHQ()) {
+                        robotColor = Color.YELLOW;
+                        robotStatus = "waiting for assignment";
+                    } else if (robot.currentState == Robot.State.MOVING_TO_FIRE) {
+                        robotColor = Color.PINK;
+                        robotStatus = "Moving to fire";
+                    } else if (robot.currentState == Robot.State.EXTINGUISHING) {
+                        robotColor = Color.RED;
+                        robotStatus = "Extinguishing fire";
+                    } else if (robot.currentState == Robot.State.MOVING_TO_HQ) {
+                        robotColor = Color.PINK;
+                        robotStatus = "Returning to HQ";
+                    } else {
+                        robotColor = Color.GRAY;
+                    }
+                } else {
+                    robotColor = Color.GRAY;
+                }
+    
                 int robotSize = cellSize - 4;
                 int x = robot.getX() * cellSize + (cellSize - robotSize) / 2;
                 int y = robot.getY() * cellSize + (cellSize - robotSize) / 2;
-                
+    
+                g2d.setColor(robotColor);
                 g2d.fillOval(x, y, robotSize, robotSize);
-                
+    
                 g2d.setColor(Color.WHITE);
                 g2d.setFont(new Font("Arial", Font.BOLD, 10));
-                String robotNum = String.valueOf(i + 1);
+                String robotNum = String.valueOf(robot.getId() + 1);
                 int textX_robot = x + (robotSize - fm.stringWidth(robotNum)) / 2;
                 int textY_robot = y + (robotSize + fm.getAscent()) / 2;
                 g2d.drawString(robotNum, textX_robot, textY_robot);
-                
-                if (robot.getState().equals("extinguishing")) {
-                    g2d.setColor(Color.CYAN);
-                    int indicatorSize = 6;
-                    g2d.fillOval(x + robotSize/2 - indicatorSize/2, 
-                                y + robotSize/2 - indicatorSize/2, 
-                                indicatorSize, indicatorSize);
-                }
+    
+                g2d.setColor(Color.BLACK);
+                g2d.setFont(new Font("Arial", Font.BOLD, 8));
+                int statusX = x;
+                int statusY = y + robotSize + 12;
+                g2d.drawString(robotStatus, statusX, statusY);
             }
         }
     }
