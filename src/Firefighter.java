@@ -25,14 +25,14 @@ public void updateState(HeadQuarters hq, double[][] intensityMap) {
             targetX = target[0];
             targetY = target[1];
             currentState = State.MOVING_TO_FIRE;
-            moveTowards(targetX, targetY);
+            moveSmartlyTowards(targetX, targetY, intensityMap);
         }
     } else if (currentState == State.MOVING_TO_FIRE) {
         if (isNearFire(intensityMap)) {
             currentState = State.EXTINGUISHING;
             extinguishFire(intensityMap);
         } else {
-            moveTowards(targetX, targetY);
+            moveSmartlyTowards(targetX, targetY, intensityMap);
         }
     } else if (currentState == State.EXTINGUISHING) {
         if (isNearFire(intensityMap)) {
@@ -41,10 +41,10 @@ public void updateState(HeadQuarters hq, double[][] intensityMap) {
             targetX = hq.getX();
             targetY = hq.getY();
             currentState = State.MOVING_TO_HQ;
-            moveTowards(targetX, targetY);
+            moveSmartlyTowards(targetX, targetY, intensityMap);
         }
     } else if (currentState == State.MOVING_TO_HQ) {
-        moveTowards(hq.getX(), hq.getY());
+        moveSmartlyTowards(hq.getX(), hq.getY(), intensityMap);
         if (isAtHQ()) {
             currentState = State.AT_HQ;
         }
