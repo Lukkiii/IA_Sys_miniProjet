@@ -32,7 +32,7 @@ public class Scout extends Robot {
 
     @Override
     public void updateState(HeadQuarters hq) {
-        if (currentState == State.RECHARGING) {
+        if (currentState == State.RECHARGING_ELECTRICITY) {
             if (isRechargeComplete()) {
                 finishRecharge();
                 currentState = State.AT_HQ;
@@ -50,7 +50,7 @@ public class Scout extends Robot {
         }
 
         if (isAtHQ() && needsRecharge()) {
-            currentState = State.RECHARGING;
+            currentState = State.RECHARGING_ELECTRICITY;
             startRecharge();
             reportFiresIfFound(hq);
             return;
@@ -72,7 +72,7 @@ public class Scout extends Robot {
             }
         }
 
-        if (currentState != State.MOVING_TO_HQ && currentState != State.RECHARGING) {
+        if (currentState != State.MOVING_TO_HQ && currentState != State.RECHARGING_ELECTRICITY) {
             moveTowardsTarget();
             currentState = State.SCOUTING;
         }

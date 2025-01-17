@@ -4,7 +4,7 @@ import java.util.List;
 public abstract class Robot {
 
     protected enum State {
-        AT_HQ, MOVING_TO_FIRE, MOVING_TO_HQ, EXTINGUISHING, SCOUTING, RECHARGING
+        AT_HQ, MOVING_TO_FIRE, MOVING_TO_HQ, EXTINGUISHING, SCOUTING, RECHARGING_WATER, RECHARGING_ELECTRICITY
     }
 
     protected static final long MAX_OPERATION_TIME = 3000;
@@ -81,7 +81,7 @@ public abstract class Robot {
 
     protected void startRecharge() {
         rechargeStartTime = System.currentTimeMillis();
-        currentState = State.RECHARGING;
+        currentState = State.RECHARGING_ELECTRICITY;
     }
 
     protected void finishRecharge() {
@@ -90,7 +90,7 @@ public abstract class Robot {
     }
 
     public double getEnergyPercentage() {
-        if (currentState == State.RECHARGING) {
+        if (currentState == State.RECHARGING_ELECTRICITY) {
             long rechargingTime = System.currentTimeMillis() - rechargeStartTime;
             return Math.min(100.0, (rechargingTime * 100.0) / RECHARGE_TIME);
         } else {
@@ -100,7 +100,7 @@ public abstract class Robot {
     }
 
     public String getStatusDescription() {
-        if (currentState == State.RECHARGING) {
+        if (currentState == State.RECHARGING_ELECTRICITY) {
             return String.format("Recharging (%.0f%%)", getEnergyPercentage());
         }
         return currentState.toString();
