@@ -7,7 +7,7 @@ import javax.swing.SwingUtilities;
 
 public class Simulation {
 
-    private static final int FIRE_UPDATE_INTERVAL = 2000;
+    private static final int FIRE_UPDATE_INTERVAL = 1000;
     private static final int ROBOT_UPDATE_INTERVAL = 300;
 
     private Fire fire;
@@ -23,7 +23,7 @@ public class Simulation {
     public Simulation() {
         this.fire = new Fire(HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight());
         this.hq = new HeadQuarters(HeadQuarters.getHqX(), HeadQuarters.getHqY(), 
-                                 HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight(), fire);
+                                 HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight());
         this.gui = new SimulationGUI(HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight(), 
                                    HeadQuarters.getHqX(), HeadQuarters.getHqY());
         this.isRunning = false;
@@ -67,8 +67,6 @@ public class Simulation {
                 ((Firefighter)robot).updateState(hq);
             }
         }
-        
-        hq.updateGlobalMap(fire.getIntensityMap());
     }
 
     // Démarrer la simulation

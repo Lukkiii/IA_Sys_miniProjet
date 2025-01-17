@@ -55,7 +55,7 @@ public class Scout extends Robot {
         reportFiresIfFound(hq);
 
         if (isAtHQ()) {
-            updateLocalKnowledge(hq);
+            localKnowledge = hq.getGlobalMap();
         }
 
         markExploredArea();

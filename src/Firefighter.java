@@ -10,13 +10,11 @@ public class Firefighter extends Robot {
 
     private double currentWater;
     private long waterRefillStartTime;
-
     private FireGrid fireGrid;
     private int targetX = -1;
     private int targetY = -1;
     private int extinguishingTime = 0;
     private int movingTime = 0;
-    
 
     public Firefighter(int id, int x, int y, int gridWidth, int gridHeight) {
         super(id, x, y, gridWidth, gridHeight);
@@ -28,29 +26,55 @@ public class Firefighter extends Robot {
         return TYPE_FIREFIGHTER;
     }
 
+    private int[] findNearestFireInLocalMap() {
+        int nearestX = -1;
+        int nearestY = -1;
+        double minDistance = Double.MAX_VALUE;
+
+        for (int i = 0; i < localKnowledge.length; i++) {
+            for (int j = 0; j < localKnowledge[0].length; j++) {
+                if (localKnowledge[i][j] > FireGrid.INTENSITY_THRESHOLD) {
+                    double distance = Math.sqrt(Math.pow(i - x, 2) + Math.pow(j - y, 2));
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        nearestX = i;
+                        nearestY = j;
+                    }
+                }
+            }
+        }
+
+        return (nearestX != -1) ? new int[]{nearestX, nearestY} : null;
+    }
+
     @Override
     public void updateState(HeadQuarters hq) {
+
         if (currentState == State.RECHARGING_ELECTRICITY) {
             if (isRechargeComplete()) {
                 finishRecharge();
-                currentState = State.AT_HQ;
             }
             return;
         }
 
         if (needsRecharge() && currentState != State.MOVING_TO_HQ && !isAtHQ()) {
+            currentState = State.MOVING_TO_HQ;
             returnToHQ();
             return;
+        }
+
+        if (isAtHQ()) {
+            localKnowledge = hq.getGlobalMap();
         }
 
         if (currentState == State.AT_HQ) {
             if (needsRecharge()) {
                 startRecharge();
             } else {
-                int[] target = hq.getFirefighterAssignment(this);
-                if (target != null) {
-                    targetX = target[0];
-                    targetY = target[1];
+                int[] fireLocation = findNearestFireInLocalMap();
+                if (fireLocation != null) {
+                    targetX = fireLocation[0];
+                    targetY = fireLocation[1];
                     extinguishingTime = 0;
                     movingTime = 0;
                     currentState = State.MOVING_TO_FIRE;
@@ -90,9 +114,6 @@ public class Firefighter extends Robot {
             }
         }
         
-        if (isAtHQ()) {
-            updateLocalKnowledge(hq);
-        }
     }
 
     private void startWaterRefill() {
@@ -143,7 +164,7 @@ public class Firefighter extends Robot {
                 int newX = x + dx;
                 int newY = y + dy;
                 if (isValidPosition(newX, newY)) {
-                    if (fireGrid != null && fireGrid.getIntensityAt(newX, newY) > FireGrid.INTENSITY_THRESHOLD) {
+                    if (localKnowledge[newX][newY] > FireGrid.INTENSITY_THRESHOLD) {
                         return true;
                     }
                 }
@@ -153,8 +174,8 @@ public class Firefighter extends Robot {
     }
 
     private void returnToHQ() {
-        targetX = HeadQuarters.HQ_X;
-        targetY = HeadQuarters.HQ_Y;
+        targetX = HeadQuarters.getHqX();
+        targetY = HeadQuarters.getHqY();
         currentState = State.MOVING_TO_HQ;
     }
 
@@ -183,24 +204,20 @@ public class Firefighter extends Robot {
     
     private double calculateMovementRisk(int x, int y, int targetX, int targetY) {
         double distanceToTarget = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
-        double fireRisk = 0;
+        double fireRisk = localKnowledge[x][y] > FireGrid.INTENSITY_THRESHOLD ? 
+                         localKnowledge[x][y] : 0;
         
-        if (fireGrid != null) {
-            fireRisk = fireGrid.getIntensityAt(x, y) > FireGrid.INTENSITY_THRESHOLD ? 
-                      fireGrid.getIntensityAt(x, y) : 0;
-        }
-        
-        return distanceToTarget + fireRisk;
+        return distanceToTarget + (fireRisk * 0.5);
     }
 
     public void extinguishFire() {
-        if (currentWater <= 0 || needsRecharge()) {
+        if (needsRecharge()) {
             returnToHQ();
             return;
         }
 
-        double waterUsed = WATER_USE_RATE * (300.0 / 1000.0);
-        currentWater = Math.max(0, currentWater - waterUsed);
+        // double waterUsed = WATER_USE_RATE * (300.0 / 1000.0);
+        // currentWater = Math.max(0, currentWater - waterUsed);
 
         for (int dx = -EXTINGUISH_RADIUS; dx <= EXTINGUISH_RADIUS; dx++) {
             for (int dy = -EXTINGUISH_RADIUS; dy <= EXTINGUISH_RADIUS; dy++) {

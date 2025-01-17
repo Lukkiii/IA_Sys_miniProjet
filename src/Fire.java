@@ -111,18 +111,6 @@ public class Fire {
         return this.fireGrid;
     }
 
-    // Récupérer la carte du feu sous forme de booléens
-    // public boolean[][] getFireMap() {
-    //     boolean[][] boolMap = new boolean[fireGrid.getWidth()][fireGrid.getHeight()];
-    //     double[][] intensityMap = fireGrid.getIntensityGrid();
-    //     for (int i = 0; i < fireGrid.getWidth(); i++) {
-    //         for (int j = 0; j < fireGrid.getHeight(); j++) {
-    //             boolMap[i][j] = intensityMap[i][j] > FireGrid.INTENSITY_THRESHOLD;
-    //         }
-    //     }
-    //     return boolMap;
-    // }
-
     // Récupérer la carte d'intensité du feu
     public double[][] getIntensityMap() {
         return fireGrid.getIntensityGrid();

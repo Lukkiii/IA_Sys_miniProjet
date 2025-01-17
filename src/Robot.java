@@ -56,18 +56,6 @@ public abstract class Robot {
         return atHQ;
     }
 
-    protected void updateLocalKnowledge(HeadQuarters hq) {
-        if (isAtHQ()) {
-            double[][] globalMap = hq.getGlobalMap();
-            for (int i = 0; i < localKnowledge.length; i++) {
-                for (int j = 0; j < localKnowledge[0].length; j++) {
-                    localKnowledge[i][j] = globalMap[i][j];
-                }
-            }
-            operationStartTime = System.currentTimeMillis();
-        }
-    }
-
     protected boolean isValidPosition(int x, int y) {
         return x >= 0 && x < localKnowledge.length && y >= 0 && y < localKnowledge[0].length;
     }
