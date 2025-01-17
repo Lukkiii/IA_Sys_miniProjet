@@ -32,15 +32,31 @@ public class Scout extends Robot {
 
     @Override
     public void updateState(HeadQuarters hq) {
-        List<FireSpot> newFires = scanArea();
-        if (!newFires.isEmpty()) {
-            hq.receiveFireReport(id, newFires);
-            discoveredFires.clear();
-
-            for (FireSpot fire : newFires) {
-                fireLocations.put(new Point(fire.x, fire.y), System.currentTimeMillis());
+        if (currentState == State.RECHARGING) {
+            if (isRechargeComplete()) {
+                finishRecharge();
+                currentState = State.AT_HQ;
+            } else {
+                reportFiresIfFound(hq);
+                return;
             }
         }
+
+        if (needsRecharge() && !isAtHQ()) {
+            currentState = State.MOVING_TO_HQ;
+            moveTowards(hq.getX(), hq.getY());
+            reportFiresIfFound(hq);
+            return;
+        }
+
+        if (isAtHQ() && needsRecharge()) {
+            currentState = State.RECHARGING;
+            startRecharge();
+            reportFiresIfFound(hq);
+            return;
+        }
+
+        reportFiresIfFound(hq);
 
         if (isAtHQ()) {
             updateLocalKnowledge(hq);
@@ -56,10 +72,24 @@ public class Scout extends Robot {
             }
         }
 
-        moveTowardsTarget();
-        currentState = State.SCOUTING;
+        if (currentState != State.MOVING_TO_HQ && currentState != State.RECHARGING) {
+            moveTowardsTarget();
+            currentState = State.SCOUTING;
+        }
 
         cleanupOldFireLocations();
+    }
+
+    private void reportFiresIfFound(HeadQuarters hq) {
+        List<FireSpot> newFires = scanArea();
+        if (!newFires.isEmpty()) {
+            hq.receiveFireReport(id, newFires);
+            discoveredFires.clear();
+
+            for (FireSpot fire : newFires) {
+                fireLocations.put(new Point(fire.x, fire.y), System.currentTimeMillis());
+            }
+        }
     }
 
     private void setFireRecheckTarget() {

@@ -136,12 +136,24 @@ public class SimulationGUI extends JFrame {
             for (Robot robot : robots) {
                 Color robotColor;
                 String robotStatus = "";
+                String statusText = "";
     
                 if (robot instanceof Scout) {
-                    robotColor = Color.BLUE;
-                    robotStatus = "Scouting";
+                    if (robot.currentState == Robot.State.RECHARGING) {
+                        robotColor = Color.GRAY;
+                        robotStatus = "Recharging";
+                    } else if (robot.currentState == Robot.State.MOVING_TO_HQ) {
+                        robotColor = Color.GRAY;
+                        robotStatus = "need recharge";
+                    } else {
+                        robotColor = Color.BLUE;
+                        robotStatus = "Scouting";
+                    }
                 } else if (robot instanceof Firefighter) {
-                    if (robot.isAtHQ()) {
+                    if (robot.currentState == Robot.State.RECHARGING) {
+                        robotColor = Color.GRAY;
+                        robotStatus = "Recharging";
+                    } else if (robot.isAtHQ()) {
                         robotColor = Color.YELLOW;
                         robotStatus = "waiting for assignment";
                     } else if (robot.currentState == Robot.State.MOVING_TO_FIRE) {
@@ -156,6 +168,7 @@ public class SimulationGUI extends JFrame {
                     } else {
                         robotColor = Color.GRAY;
                     }
+                    statusText = String.format("FF: %s", robot.getStatusDescription());
                 } else {
                     robotColor = Color.GRAY;
                 }
@@ -166,7 +179,18 @@ public class SimulationGUI extends JFrame {
     
                 g2d.setColor(robotColor);
                 g2d.fillOval(x, y, robotSize, robotSize);
-    
+
+                int barWidth = robotSize;
+                int barHeight = 3;
+                int barY = y + robotSize + 2;
+
+                g2d.setColor(Color.GRAY);
+                g2d.fillRect(x, barY, barWidth, barHeight);
+
+                g2d.setColor(Color.GREEN);
+                int energyWidth = (int)(barWidth * robot.getEnergyPercentage() / 100.0);
+                g2d.fillRect(x, barY, energyWidth, barHeight);
+        
                 g2d.setColor(Color.WHITE);
                 g2d.setFont(new Font("Arial", Font.BOLD, 10));
                 String robotNum = String.valueOf(robot.getId() + 1);
@@ -179,6 +203,7 @@ public class SimulationGUI extends JFrame {
                 int statusX = x;
                 int statusY = y + robotSize + 12;
                 g2d.drawString(robotStatus, statusX, statusY);
+                g2d.drawString(statusText, x, y + robotSize + 15 + (robot instanceof Firefighter ? barHeight : 0));
             }
         }
     }
