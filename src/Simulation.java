@@ -36,7 +36,9 @@ public class Simulation {
         this.robots = new CopyOnWriteArrayList<>();
         this.survivors = new CopyOnWriteArrayList<>();
         initializeRobots();
-        spawnSurvivor();
+        if (Math.random() < SURVIVOR_SPAWN_PROBABILITY) {
+            spawnSurvivor();
+        }
     }
 
     private void initializeRobots() {
