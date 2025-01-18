@@ -1,6 +1,7 @@
 import java.util.*;
 
 public class HeadQuarters {
+    // Durée de validité des rapports de feu en millisecondes
     public static final long REPORT_EXPIRATION_TIME = 100;
     public static final int MAX_ROBOTS = 7;
     public static final int INITIAL_SCOUTS = 2;
@@ -8,7 +9,6 @@ public class HeadQuarters {
     public static final int GRID_HEIGHT = 24;
     public static final int HQ_X = 12;
     public static final int HQ_Y = 12;
-    public static final int SAFE_DISTANCE = 4;
 
     private int x;
     private int y;
@@ -27,6 +27,7 @@ public class HeadQuarters {
         this.globalFireMap = new double[width][height];
     }
 
+    // Vérifie si un nouveau robot pompier est nécessaire et le crée si besoin
     public Firefighter checkAndAddFirefighter() {
         int activeFireCount = 0;
         for (int i = 0; i < gridWidth; i++) {
@@ -54,16 +55,17 @@ public class HeadQuarters {
         return ff;
     }
 
+    // Recevoir un rapport de feu d'un robot pompier
     public void receiveFireReport(int robotId, List<FireSpot> spots) {
         long currentTime = System.currentTimeMillis();
-    
         List<FireSpot> updatedSpots = new ArrayList<>(spots);
+
         robotReports.put(robotId, updatedSpots);
-        
         spots.forEach(spot -> reportTimes.put(spot, currentTime));
         
+        // Mettre à jour la carte globale des feux de QG
         updateGlobalFireMap();
-        
+        // Nettoyer les anciens rapports
         cleanupOldReports();
     }
 
@@ -81,21 +83,23 @@ public class HeadQuarters {
     private void cleanupOldReports() {
         long currentTime = System.currentTimeMillis();
     
+        // Supprimer les rapports de feu expirés
         reportTimes.entrySet().removeIf(entry -> 
             currentTime - entry.getValue() > REPORT_EXPIRATION_TIME);
-        
+        // Supprimer les rapports de feu obsolètes
         robotReports.values().forEach(spots -> 
             spots.removeIf(spot -> 
                 !reportTimes.containsKey(spot) || 
                 globalFireMap[spot.x][spot.y] <= FireGrid.INTENSITY_THRESHOLD
             )
         );
-        
+        // Supprimer les rapport de feu vides
         robotReports.entrySet().removeIf(entry -> entry.getValue().isEmpty());
-        
+        // Mettre à jour la carte globale des feux de QG
         updateGlobalFireMap();
     }
 
+    // ====== Getter et setter pour QG ======
     public int getX() { return x; }
     public int getY() { return y; }
 
@@ -111,5 +115,4 @@ public class HeadQuarters {
     public static int getGridHeight() { return GRID_HEIGHT; }
     public static int getHqX() { return HQ_X; }
     public static int getHqY() { return HQ_Y; }
-    public static int getSafeDistance() { return SAFE_DISTANCE; }
 }

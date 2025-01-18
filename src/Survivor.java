@@ -15,6 +15,7 @@ public class Survivor {
         this.dead = false;
     }
 
+    // Mettre à jour le statut du survivant
     public void updateStatus(double fireIntensity) {
         if (!rescued && !dead) {
             if (fireIntensity >= DEATH_THRESHOLD) {
@@ -27,9 +28,11 @@ public class Survivor {
         }
     }
 
+    // Getters et Setters
     public int getId() { return id; }
     public int getX() { return x; }
     public int getY() { return y; }
+    
     public boolean isRescued() { return rescued; }
     public boolean isDead() { return dead; }
     

@@ -8,8 +8,11 @@ import javax.swing.SwingUtilities;
 
 public class Simulation {
 
+    // Temps de mise à jour du feu
     private static final int FIRE_UPDATE_INTERVAL = 2000;
+    // Temps de mise à jour des robots
     private static final int ROBOT_UPDATE_INTERVAL = 300;
+    // Nombre maximum de survivants
     private static final int MAX_SURVIVORS = 7;
 
     private Fire fire;
@@ -38,9 +41,9 @@ public class Simulation {
         initializeRobots();       
     }
 
+    // Initialiser les robots
     private void initializeRobots() {
         int id = 0;
-        // Add initial scouts
         for (int i = 0; i < HeadQuarters.INITIAL_SCOUTS; i++) {
             robots.add(new Scout(id++, HeadQuarters.getHqX(), HeadQuarters.getHqY(), 
                                HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight()));
@@ -94,6 +97,7 @@ public class Simulation {
         });
     }
 
+    // Mettre à jour les survivants
     private void updateSurvivors() {
         double[][] intensityMap = fire.getIntensityMap();
         for (Survivor survivor : survivors) {
@@ -122,14 +126,17 @@ public class Simulation {
             }
         }
 
+        // Mettre à jour les survivants
         updateSurvivors();
     }
 
+    // Créer l'interface graphique
     public void createGUI() {
         this.gui = new SimulationGUI(HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight(), 
                                    HeadQuarters.getHqX(), HeadQuarters.getHqY(), this);
     }
 
+    // Réinitialiser la simulation
     public void reset() {
         stop();
         initializeSimulation();
@@ -144,6 +151,7 @@ public class Simulation {
         this.fireExecutor = Executors.newScheduledThreadPool(1);
         this.robotExecutor = Executors.newScheduledThreadPool(1);
 
+        // Scheduler l'apparition des survivants après 5 secondes de démarrage de la simulation
         ScheduledExecutorService survivorExecutor = Executors.newScheduledThreadPool(1);
         survivorExecutor.schedule(() -> {
             if (isRunning) {
@@ -153,7 +161,7 @@ public class Simulation {
             survivorExecutor.shutdown();
         }, 5, TimeUnit.SECONDS); 
 
-        // Scheduler les mises à jour de feu à un rythme régulier
+        // Scheduler les mises à jour de feu
         fireExecutor.scheduleAtFixedRate(() -> {
             if (isRunning) {
                 fire.spread();
@@ -162,7 +170,7 @@ public class Simulation {
             }
         }, 0, FIRE_UPDATE_INTERVAL, TimeUnit.MILLISECONDS);
 
-        // Scheduler les mises à jour des robots à un rythme régulier
+        // Scheduler les mises à jour des robots
         robotExecutor.scheduleAtFixedRate(() -> {
             if (isRunning) {
                 updateRobots();
@@ -192,6 +200,7 @@ public class Simulation {
         }
     }
 
+    // Générer les informations de simulation
     private String generateSimulationInfo() {
         StringBuilder info = new StringBuilder();
         info.append("=== Simulation Status ===\n");

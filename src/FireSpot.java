@@ -1,3 +1,4 @@
+// Information d'un point de feu
 class FireSpot {
     int x, y;
     double intensity;

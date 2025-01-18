@@ -45,6 +45,7 @@ public class SimulationGUI extends JFrame {
         setVisible(true);
     }
 
+    // Créer les boutons de contrôle
     private void createControlButtons(JPanel panel) {
         startButton = new JButton("Start");
         stopButton = new JButton("Stop");
@@ -94,6 +95,7 @@ public class SimulationGUI extends JFrame {
     }
 
 
+    // Mettre à jour l'affichage
     public void updateDisplay(double[][] intensityMap, String info, List<Robot> robots, List<Survivor> survivors) {
         simulationPanel.updateState(intensityMap);
         simulationPanel.updateRobots(robots);

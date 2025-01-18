@@ -1,13 +1,15 @@
 
 public class FireGrid {
-    private double[][] grid;
-    private int width;
-    private int height;
-    
+    // Valeur maximale de l'intensité du feu
     public static final double MAX_INTENSITY = 100.0;
+    // Intensité initiale du feu
     public static final double INITIAL_INTENSITY = 80.0;
     // Seuil d'intensité pour déterminer si une case est en feu
     public static final double INTENSITY_THRESHOLD = 10.0;
+
+    private double[][] grid;
+    private int width;
+    private int height;
 
     public FireGrid(int width, int height) {
         this.width = width;
@@ -15,6 +17,7 @@ public class FireGrid {
         this.grid = new double[width][height];
     }
 
+    // Mettre à jour la grille avec de nouvelles intensités
     public void updateGrid(double[][] newGrid) {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
@@ -23,16 +26,15 @@ public class FireGrid {
         }
     }
 
-    public boolean[][] getGrid() {
-        boolean[][] boolGrid = new boolean[width][height];
-        for (int i = 0; i < width; i++) {
-            for (int j = 0; j < height; j++) {
-                boolGrid[i][j] = grid[i][j] > INTENSITY_THRESHOLD;
-            }
-        }
-        return boolGrid;
+    public void decreaseIntensity(int x, int y, double amount) {
+        grid[x][y] = Math.max(0.0, grid[x][y] - amount);
     }
 
+    public void increaseIntensity(int x, int y, double amount) {
+        grid[x][y] = Math.min(MAX_INTENSITY, grid[x][y] + amount);
+    }
+
+    // ====== Getter et setter pour la grille d'intensité du feu ======
     public double[][] getIntensityGrid() {
         double[][] copy = new double[width][height];
         for (int i = 0; i < width; i++) {
@@ -57,14 +59,6 @@ public class FireGrid {
 
     public void setIntensityAt(int x, int y, double intensity) {
         grid[x][y] = Math.min(Math.max(intensity, 0.0), MAX_INTENSITY);
-    }
-
-    public void decreaseIntensity(int x, int y, double amount) {
-        grid[x][y] = Math.max(0.0, grid[x][y] - amount);
-    }
-
-    public void increaseIntensity(int x, int y, double amount) {
-        grid[x][y] = Math.min(MAX_INTENSITY, grid[x][y] + amount);
     }
 
     public double getIntensity(int newX, int newY) {

@@ -1,9 +1,10 @@
 import java.util.Random;
 public class Fire {
-    private FireGrid fireGrid;
-    private Random random = new Random();
     // Probabilité de propagation du feu
     private static final double SPREAD_PROBABILITY = 0.3;
+
+    private FireGrid fireGrid;
+    private Random random = new Random();
 
     public Fire(int width, int height) {
         this.fireGrid = new FireGrid(width, height);
@@ -22,12 +23,13 @@ public class Fire {
     private void createNewFire() {
         int maxAttempts = 10;
         int attempts = 0;
+        // Essayer de créer un feu à une position aléatoire (10 tentatives)
         while (attempts < maxAttempts) {
             int x = random.nextInt(fireGrid.getWidth());
             int y = random.nextInt(fireGrid.getHeight());
             // Ne pas créer de feu près du quartier général
             if (!isNearHQ(x, y)) {
-                // Intensité initiale du feu
+                // 80% à 100% de l'intensité initiale
                 double initialIntensity = FireGrid.INITIAL_INTENSITY * (0.8 + random.nextDouble() * 0.2);
                 fireGrid.setIntensityAt(x, y, initialIntensity);
                 break;
@@ -57,25 +59,27 @@ public class Fire {
             }
         }
 
-        // Propager le feu
         for (int i = 0; i < fireGrid.getWidth(); i++) {
             for (int j = 0; j < fireGrid.getHeight(); j++) {
                 if (currentIntensities[i][j] > FireGrid.INTENSITY_THRESHOLD) {
+                    // Propager le feu à partir des cellules actives
                     spreadToNeighbors(i, j, newGrid, currentIntensities[i][j]);
                 }
             }
         }
 
-        // Create new fire if none exists
+        // Créer un nouveau feu si aucun feu actif n'est présent
         if (!hasActiveFire) {
             createNewFire();
         }
-        
+
+        // Mettre à jour la grille d'intensité du feu
         fireGrid.updateGrid(newGrid);
     }
 
     // Propager le feu aux voisins
     private void spreadToNeighbors(int x, int y, double[][] newGrid, double sourceIntensity) {
+
         for (int dx = -1; dx <= 1; dx++) {
             for (int dy = -1; dy <= 1; dy++) {
 
@@ -84,12 +88,13 @@ public class Fire {
 
                 int nx = x + dx;
                 int ny = y + dy;
+
                 if (nx >= 0 && nx < fireGrid.getWidth() && ny >= 0 && ny < fireGrid.getHeight()) {
                     if (newGrid[nx][ny] < FireGrid.INTENSITY_THRESHOLD && random.nextDouble() < SPREAD_PROBABILITY) {
 
                         // Intensité de propagation du feu (60% à 90% de l'intensité source)
                         double spreadIntensity = sourceIntensity * (0.6 + random.nextDouble() * 0.3);
-                        // Limiter l'intensité de propagation du feu 
+                        // Limiter l'intensité de propagation du feu
                         spreadIntensity = Math.max(FireGrid.INTENSITY_THRESHOLD + 10, Math.min(FireGrid.MAX_INTENSITY, spreadIntensity));
                         newGrid[nx][ny] = spreadIntensity;
                     }

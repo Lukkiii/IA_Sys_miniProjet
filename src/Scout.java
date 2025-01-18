@@ -6,9 +6,13 @@ import java.util.*;
  */
 public class Scout extends Robot {
     // ==== Constantes ====
+    // Portée de vision du robot
     private static final int VISION_RANGE = 5;
+    // Nombre maximal de cibles à conserver
     private static final int MAX_PREVIOUS_TARGETS = 5;
+    // Intervalle de re-vérification des incendies
     private static final long FIRE_RECHECK_INTERVAL = 5000;
+    // Probabilité de re-vérification des incendies
     private static final double FIRE_RECHECK_PROBABILITY = 0.5;
 
     // ==== Variables d'instance ====
@@ -45,7 +49,7 @@ public class Scout extends Robot {
             return;
         }
 
-        // Rapport des incendies détectés
+        // Envoyer les rapports d'incendie au QG
         reportFiresIfFound(hq);
 
         // Mise à jour des connaissances si au QG
@@ -96,6 +100,7 @@ public class Scout extends Robot {
             hq.receiveFireReport(id, newFires);
             discoveredFires.clear();
 
+            // Ajouter les nouvelles positions d'incendie à la liste
             for (FireSpot fire : newFires) {
                 fireLocations.put(new Point(fire.x, fire.y), System.currentTimeMillis());
             }

@@ -4,10 +4,15 @@ import java.util.List;
 public class Firefighter extends Robot {
     // Declaration de constantes
     private static final int VISION_RANGE = 3;
+    // Rayon d'extinction du feu
     private static final int EXTINGUISH_RADIUS = 10;
+    // Quantité d'eau utilisée pour éteindre le feu
     private static final double EXTINGUISH_AMOUNT = 35.0;
+    // Capacité maximale d'eau du robot
     private static final double MAX_WATER = 100.0;
+    // Taux d'utilisation de l'eau
     private static final double WATER_USE_RATE = 50.0;
+    // Temps de recharge de l'eau
     private static final long WATER_REFILL_TIME = 2000;
 
     // Declaration des attributs
@@ -35,14 +40,17 @@ public class Firefighter extends Robot {
             return;
         }
 
+        // Mettre à jour l'état de l'eau
         if (handleChargingWaterState()) {
             return;
         }
 
+        // Vérifier si le robot a besoin de se recharger en électricité
         if (handleNeedsElectricityRecharge()) {
             return;
         }
 
+        // Vérifier si le robot a besoin de se recharger en eau
         if (handleNeedsWaterRefill()) {
             return;
         }
@@ -63,7 +71,6 @@ public class Firefighter extends Robot {
         }
     }
 
-    
     private boolean handleChargingElectricityState() {
         if (currentState == State.RECHARGING_ELECTRICITY) {
             if (isRechargeComplete()) {
@@ -155,6 +162,7 @@ public class Firefighter extends Robot {
         }
     }
 
+    // Trouver le feu le plus proche dans la connaissance locale
     private int[] findNearestFireInLocalMap() {
         int nearestX = -1;
         int nearestY = -1;
@@ -176,6 +184,7 @@ public class Firefighter extends Robot {
         return (nearestX != -1) ? new int[]{nearestX, nearestY} : null;
     }
 
+    // Vérifier si le feu est proche
     private boolean isNearFireDirect() {
         for (int dx = -VISION_RANGE; dx <= VISION_RANGE; dx++) {
             for (int dy = -VISION_RANGE; dy <= VISION_RANGE; dy++) {
@@ -196,6 +205,7 @@ public class Firefighter extends Robot {
         currentState = State.MOVING_TO_HQ;
     }
 
+    // Déplacer le robot vers la cible de manière intelligente
     private void moveSmartlyTowards(int targetX, int targetY) {
         int bestDx = 0, bestDy = 0;
         double lowestRisk = Double.MAX_VALUE;
@@ -219,6 +229,7 @@ public class Firefighter extends Robot {
         y += bestDy;
     }
     
+    // Calculer le risque de mouvement
     private double calculateMovementRisk(int x, int y, int targetX, int targetY) {
         double distanceToTarget = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
         double fireRisk = localKnowledge[x][y] > FireGrid.INTENSITY_THRESHOLD ? 
@@ -227,6 +238,7 @@ public class Firefighter extends Robot {
         return distanceToTarget + (fireRisk * 0.5);
     }
 
+    // Éteindre le feu
     public void extinguishFire(HeadQuarters hq) {
         if (needsRecharge() || currentWater <= 0) {
             returnToHQ();
@@ -266,11 +278,14 @@ public class Firefighter extends Robot {
         }
     }
 
+    // ===== Gestion de l'eau =====
+    // Début de la recharge de l'eau
     private void startWaterRefill() {
         waterRefillStartTime = System.currentTimeMillis();
         currentState = State.RECHARGING_WATER;
     }
 
+    // Vérifier si la recharge de l'eau est terminée
     private boolean isWaterRefillComplete() {
         if (currentState != State.RECHARGING_WATER) {
             return false;
@@ -278,10 +293,12 @@ public class Firefighter extends Robot {
         return System.currentTimeMillis() - waterRefillStartTime >= WATER_REFILL_TIME;
     }
 
+    // Fin de la recharge de l'eau
     private void finishWaterRefill() {
         currentWater = MAX_WATER;
     }
 
+    // ===== Getters et setters =====
     public double getWaterPercentage() {
         return (currentWater / MAX_WATER) * 100.0;
     }
