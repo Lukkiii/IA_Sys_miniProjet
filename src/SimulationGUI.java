@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class SimulationGUI extends JFrame {
     private SimulationPanel simulationPanel;
@@ -94,9 +95,10 @@ public class SimulationGUI extends JFrame {
     }
 
 
-    public void updateDisplay(double[][] intensityMap, String info, List<Robot> robots) {
+    public void updateDisplay(double[][] intensityMap, String info, List<Robot> robots, List<Survivor> survivors) {
         simulationPanel.updateState(intensityMap);
         simulationPanel.updateRobots(robots);
+        simulationPanel.updateSurvivors(survivors);  // 新增
         infoPanel.setText(info);
         simulationPanel.repaint();
     }
@@ -107,6 +109,7 @@ public class SimulationGUI extends JFrame {
         private final int height;
         private final int cellSize = 20;
         private List<Robot> robots = new ArrayList<>();
+        private List<Survivor> survivors = new ArrayList<>();
 
         public SimulationPanel(int width, int height) {
             this.width = width;
@@ -121,6 +124,10 @@ public class SimulationGUI extends JFrame {
 
         public void updateRobots(List<Robot> robots) {
             this.robots = robots;
+        }
+
+        public void updateSurvivors(List<Survivor> survivors) {
+            this.survivors = survivors;
         }
 
         private Color getFireColor(double intensity) {
@@ -189,6 +196,27 @@ public class SimulationGUI extends JFrame {
             int textX = hqX * cellSize + (cellSize - fm.stringWidth(hqText)) / 2;
             int textY = hqY * cellSize + (cellSize + fm.getAscent()) / 2;
             g2d.drawString(hqText, textX, textY);
+
+            // Dessiner les survivants
+            for (Survivor survivor : survivors) {
+                if (!survivor.isRescued()) {
+                    int x = survivor.getX() * cellSize;
+                    int y = survivor.getY() * cellSize;
+                    
+                    g2d.setColor(Color.MAGENTA);
+                    int survivorSize = cellSize/2;
+                    int xOffset = (cellSize - survivorSize)/2;
+                    int yOffset = (cellSize - survivorSize)/2;
+                    g2d.fillOval(x + xOffset, y + yOffset, survivorSize, survivorSize);
+                    
+                    g2d.setColor(Color.WHITE);
+                    g2d.setFont(new Font("Arial", Font.BOLD, 10));
+                    String survivorNum = String.valueOf(survivor.getId() + 1);
+                    int textX_survivor = x + cellSize/2 - fm.stringWidth(survivorNum)/2;
+                    int textY_survivor = y + cellSize/2 + fm.getAscent()/2;
+                    g2d.drawString(survivorNum, textX_survivor, textY_survivor);
+                }
+            }
 
             // Dessiner le robot
             for (Robot robot : robots) {

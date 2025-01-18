@@ -9,6 +9,8 @@ public class Simulation {
 
     private static final int FIRE_UPDATE_INTERVAL = 2000;
     private static final int ROBOT_UPDATE_INTERVAL = 300;
+    private static final double SURVIVOR_SPAWN_PROBABILITY = 0.3;
+    private static final int MAX_SURVIVORS = 5;
 
     private Fire fire;
     private HeadQuarters hq;
@@ -19,6 +21,7 @@ public class Simulation {
     private int timeStep = 0;
 
     private List<Robot> robots;
+    private List<Survivor> survivors;
 
     public Simulation() {
         initializeSimulation();
@@ -31,7 +34,9 @@ public class Simulation {
         this.isRunning = false;
         this.timeStep = 0;
         this.robots = new CopyOnWriteArrayList<>();
+        this.survivors = new CopyOnWriteArrayList<>();
         initializeRobots();
+        spawnSurvivor();
     }
 
     private void initializeRobots() {
@@ -43,10 +48,21 @@ public class Simulation {
         }
     }
 
+    // Ajouter les survivants
+    private void spawnSurvivor() {
+        int id = 0;
+        for (int i = 0; i < MAX_SURVIVORS; i++) {
+            int x = (int)(Math.random() * HeadQuarters.getGridWidth());
+            int y = (int)(Math.random() * HeadQuarters.getGridHeight());
+            survivors.add(new Survivor(id++, x, y));
+        }
+
+    }
+
     // Mettre à jour l'interface graphique
     private void updateGUI() {
         SwingUtilities.invokeLater(() -> {
-            gui.updateDisplay(fire.getIntensityMap(), generateSimulationInfo(), robots);
+            gui.updateDisplay(fire.getIntensityMap(), generateSimulationInfo(), robots, survivors);
         });
     }
 
@@ -147,6 +163,12 @@ public class Simulation {
                 robot.getId() + 1, robot.getX(), robot.getY()));
         }
         info.append("\n");
+
+        info.append("=== Survivors Status ===\n");
+        long activeCount = survivors.stream().filter(s -> !s.isRescued()).count();
+        long rescuedCount = survivors.stream().filter(Survivor::isRescued).count();
+        info.append("Active Survivors: ").append(activeCount).append("\n");
+        info.append("Rescued Survivors: ").append(rescuedCount).append("\n\n");
 
         double[][] intensityMap = fire.getIntensityMap();
         int fireCount = 0;
