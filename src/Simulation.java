@@ -53,7 +53,6 @@ public class Simulation {
         double[][] intensityMap = fire.getIntensityMap();
         List<Point> allFireLocations = new ArrayList<>();
         
-        // 收集所有火场位置
         for (int i = 0; i < HeadQuarters.getGridWidth(); i++) {
             for (int j = 0; j < HeadQuarters.getGridHeight(); j++) {
                 if (intensityMap[i][j] > FireGrid.INTENSITY_THRESHOLD) {
