@@ -9,7 +9,6 @@ public class Simulation {
 
     private static final int FIRE_UPDATE_INTERVAL = 2000;
     private static final int ROBOT_UPDATE_INTERVAL = 300;
-    private static final double SURVIVOR_SPAWN_PROBABILITY = 0.3;
     private static final int MAX_SURVIVORS = 5;
 
     private Fire fire;
@@ -36,9 +35,8 @@ public class Simulation {
         this.robots = new CopyOnWriteArrayList<>();
         this.survivors = new CopyOnWriteArrayList<>();
         initializeRobots();
-        if (Math.random() < SURVIVOR_SPAWN_PROBABILITY) {
-            spawnSurvivor();
-        }
+        spawnSurvivor();
+        
     }
 
     private void initializeRobots() {
