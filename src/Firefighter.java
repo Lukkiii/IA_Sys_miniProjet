@@ -51,6 +51,7 @@ public class Firefighter extends Robot {
         if (isAtHQ()) {
             localKnowledge = hq.getGlobalMap();
             handleAtHQState();
+            operationStartTime = System.currentTimeMillis();
         }
 
         if (currentState == State.MOVING_TO_FIRE) {
@@ -103,11 +104,11 @@ public class Firefighter extends Robot {
     }
 
     private void handleAtHQState() {
-        if (needsRecharge() || currentWater < MAX_WATER) {
+        if (needsRecharge() || currentWater < MAX_WATER*0.5) {
             if (needsRecharge()) {
                 startRecharge();
             }
-            if (currentWater < MAX_WATER) {
+            if (currentWater < MAX_WATER*0.5) {
                 startWaterRefill();
             }
         } else {
@@ -141,11 +142,11 @@ public class Firefighter extends Robot {
     private void handleMovingToHQState(HeadQuarters hq) {
         moveSmartlyTowards(hq.getX(), hq.getY());
         if (isAtHQ()) {
-            if (needsRecharge() || currentWater < MAX_WATER) {
+            if (needsRecharge() || currentWater < MAX_WATER*0.5) {
                 if (needsRecharge()) {
                     startRecharge();
                 }
-                if (currentWater < MAX_WATER) {
+                if (currentWater < MAX_WATER*0.5) {
                     startWaterRefill();
                 }
             } else {
@@ -296,7 +297,7 @@ public class Firefighter extends Robot {
         StringBuilder status = new StringBuilder();
         
         boolean isCharging = currentState == State.RECHARGING_ELECTRICITY;
-        boolean isRefilling = currentWater < MAX_WATER;
+        boolean isRefilling = currentWater < MAX_WATER*0.5;
         
         if (isCharging && isRefilling) {
             status.append(String.format("Recharging & Refilling (E:%.0f%% W:%.0f%%)", 
