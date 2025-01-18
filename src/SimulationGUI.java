@@ -247,7 +247,7 @@ public class SimulationGUI extends JFrame {
                         robotStatus = "Refilling water";
                     } else if (robot.isAtHQ()) {
                         robotColor = Color.YELLOW;
-                        robotStatus = "waiting for assignment";
+                        robotStatus = "waiting...";
                     } else if (robot.currentState == Robot.State.MOVING_TO_FIRE) {
                         robotColor = Color.PINK;
                         robotStatus = "Moving to fire";
