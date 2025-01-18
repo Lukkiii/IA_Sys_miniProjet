@@ -1,3 +1,4 @@
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
@@ -9,7 +10,7 @@ public class Simulation {
 
     private static final int FIRE_UPDATE_INTERVAL = 2000;
     private static final int ROBOT_UPDATE_INTERVAL = 300;
-    private static final int MAX_SURVIVORS = 5;
+    private static final int MAX_SURVIVORS = 7;
 
     private Fire fire;
     private HeadQuarters hq;
@@ -34,9 +35,7 @@ public class Simulation {
         this.timeStep = 0;
         this.robots = new CopyOnWriteArrayList<>();
         this.survivors = new CopyOnWriteArrayList<>();
-        initializeRobots();
-        spawnSurvivor();
-        
+        initializeRobots();       
     }
 
     private void initializeRobots() {
@@ -51,12 +50,42 @@ public class Simulation {
     // Ajouter les survivants
     private void spawnSurvivor() {
         int id = 0;
-        for (int i = 0; i < MAX_SURVIVORS; i++) {
-            int x = (int)(Math.random() * HeadQuarters.getGridWidth());
-            int y = (int)(Math.random() * HeadQuarters.getGridHeight());
-            survivors.add(new Survivor(id++, x, y));
+        double[][] intensityMap = fire.getIntensityMap();
+        List<Point> allFireLocations = new ArrayList<>();
+        
+        // 收集所有火场位置
+        for (int i = 0; i < HeadQuarters.getGridWidth(); i++) {
+            for (int j = 0; j < HeadQuarters.getGridHeight(); j++) {
+                if (intensityMap[i][j] > FireGrid.INTENSITY_THRESHOLD) {
+                    allFireLocations.add(new Point(i, j));
+                }
+            }
         }
-
+    
+        if (!allFireLocations.isEmpty()) {
+            List<Point> selectedFireLocations = new ArrayList<>(allFireLocations);
+            for (int i = 0; i < MAX_SURVIVORS && !selectedFireLocations.isEmpty(); i++) {
+                int index = (int)(Math.random() * selectedFireLocations.size());
+                Point p = selectedFireLocations.get(index);
+                
+                List<Point> nearbyFirePoints = new ArrayList<>();
+                for (Point firePoint : allFireLocations) {
+                    if (Math.abs(firePoint.x - p.x) <= 2 && Math.abs(firePoint.y - p.y) <= 2) {
+                        nearbyFirePoints.add(firePoint);
+                    }
+                }
+                
+                int survivorsInThisFire = 1 + (int)(Math.random() * 3);
+                for (int j = 0; j < survivorsInThisFire && id < MAX_SURVIVORS && !nearbyFirePoints.isEmpty(); j++) {
+                    int firePointIndex = (int)(Math.random() * nearbyFirePoints.size());
+                    Point survivorPoint = nearbyFirePoints.get(firePointIndex);
+                    survivors.add(new Survivor(id++, survivorPoint.x, survivorPoint.y));
+                    nearbyFirePoints.remove(firePointIndex);
+                }
+                
+                selectedFireLocations.remove(index);
+            }
+        }
     }
 
     // Mettre à jour l'interface graphique
@@ -64,6 +93,15 @@ public class Simulation {
         SwingUtilities.invokeLater(() -> {
             gui.updateDisplay(fire.getIntensityMap(), generateSimulationInfo(), robots, survivors);
         });
+    }
+
+    private void updateSurvivors() {
+        double[][] intensityMap = fire.getIntensityMap();
+        for (Survivor survivor : survivors) {
+            if (!survivor.isRescued() && !survivor.isDead()) {
+                survivor.updateStatus(intensityMap[survivor.getX()][survivor.getY()]);
+            }
+        }
     }
 
     // Mettre à jour les robots
@@ -84,6 +122,8 @@ public class Simulation {
                 ((Firefighter)robot).updateState(hq);
             }
         }
+
+        updateSurvivors();
     }
 
     public void createGUI() {
@@ -104,6 +144,15 @@ public class Simulation {
         isRunning = true;
         this.fireExecutor = Executors.newScheduledThreadPool(1);
         this.robotExecutor = Executors.newScheduledThreadPool(1);
+
+        ScheduledExecutorService survivorExecutor = Executors.newScheduledThreadPool(1);
+        survivorExecutor.schedule(() -> {
+            if (isRunning) {
+                spawnSurvivor();
+                updateGUI();
+            }
+            survivorExecutor.shutdown();
+        }, 5, TimeUnit.SECONDS); 
 
         // Scheduler les mises à jour de feu à un rythme régulier
         fireExecutor.scheduleAtFixedRate(() -> {
@@ -165,10 +214,16 @@ public class Simulation {
         info.append("\n");
 
         info.append("=== Survivors Status ===\n");
-        long activeCount = survivors.stream().filter(s -> !s.isRescued()).count();
-        long rescuedCount = survivors.stream().filter(Survivor::isRescued).count();
+        long activeCount = survivors.stream()
+            .filter(s -> !s.isRescued() && !s.isDead()).count();
+        long rescuedCount = survivors.stream()
+            .filter(Survivor::isRescued).count();
+        long deadCount = survivors.stream()
+            .filter(Survivor::isDead).count();
+    
         info.append("Active Survivors: ").append(activeCount).append("\n");
-        info.append("Rescued Survivors: ").append(rescuedCount).append("\n\n");
+        info.append("Rescued Survivors: ").append(rescuedCount).append("\n");
+        info.append("Lost Survivors: ").append(deadCount).append("\n");
 
         double[][] intensityMap = fire.getIntensityMap();
         int fireCount = 0;

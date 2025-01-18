@@ -198,7 +198,7 @@ public class SimulationGUI extends JFrame {
 
             // Dessiner les survivants
             for (Survivor survivor : survivors) {
-                if (!survivor.isRescued()) {
+                if (!survivor.isRescued() && !survivor.isDead()) {
                     int x = survivor.getX() * cellSize;
                     int y = survivor.getY() * cellSize;
                     
