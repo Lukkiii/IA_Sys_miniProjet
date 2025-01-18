@@ -323,10 +323,4 @@ public class Scout extends Robot {
     public FireGrid getFireGrid() {
         return fireGrid;
     }
-
-    List<FireSpot> reportDiscoveredFires() {
-        List<FireSpot> reports = new ArrayList<>(discoveredFires);
-        discoveredFires.clear();
-        return reports;
-    }
 }

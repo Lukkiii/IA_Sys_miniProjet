@@ -1,3 +1,6 @@
+import java.util.ArrayList;
+import java.util.List;
+
 public class Firefighter extends Robot {
     // Declaration de constantes
     private static final int VISION_RANGE = 3;
@@ -52,9 +55,9 @@ public class Firefighter extends Robot {
         if (currentState == State.AT_HQ) {
             handleAtHQState();
         } else if (currentState == State.MOVING_TO_FIRE) {
-            handleMovingToFireState();
+            handleMovingToFireState(hq);
         } else if (currentState == State.EXTINGUISHING) {
-            handleExtinguishingState();
+            handleExtinguishingState(hq);
         } else if (currentState == State.MOVING_TO_HQ) {
             handleMovingToHQState(hq);
         }
@@ -119,18 +122,18 @@ public class Firefighter extends Robot {
         }
     }
 
-    private void handleMovingToFireState() {
+    private void handleMovingToFireState(HeadQuarters hq) {
         if (isNearFireDirect()) {
             currentState = State.EXTINGUISHING;
-            extinguishFire();
+            extinguishFire(hq);
         } else {
             moveSmartlyTowards(targetX, targetY);
         }
     }
     
-    private void handleExtinguishingState() {
+    private void handleExtinguishingState(HeadQuarters hq) {
         if (isNearFireDirect()) {
-            extinguishFire();
+            extinguishFire(hq);
         } else {
             returnToHQ();
         }
@@ -224,7 +227,7 @@ public class Firefighter extends Robot {
         return distanceToTarget + (fireRisk * 0.5);
     }
 
-    public void extinguishFire() {
+    public void extinguishFire(HeadQuarters hq) {
         if (needsRecharge() || currentWater <= 0) {
             returnToHQ();
             return;
@@ -238,6 +241,7 @@ public class Firefighter extends Robot {
 
         currentWater = Math.max(0, currentWater - waterNeeded);
 
+        List<FireSpot> extinguishedFires = new ArrayList<>();
         for (int dx = -EXTINGUISH_RADIUS; dx <= EXTINGUISH_RADIUS; dx++) {
             for (int dy = -EXTINGUISH_RADIUS; dy <= EXTINGUISH_RADIUS; dy++) {
                 int newX = x + dx;
@@ -248,10 +252,17 @@ public class Firefighter extends Robot {
                         double effect = EXTINGUISH_AMOUNT * (1.0 - (distance / (EXTINGUISH_RADIUS + 1)));
                         if (fireGrid != null) {
                             fireGrid.decreaseIntensity(newX, newY, effect);
+                            if (fireGrid.getIntensity(newX, newY) <= FireGrid.INTENSITY_THRESHOLD) {
+                                extinguishedFires.add(new FireSpot(newX, newY, 0, System.currentTimeMillis()));
+                            }
                         }
                     }
                 }
             }
+        }
+
+        if (!extinguishedFires.isEmpty()) {
+            hq.receiveFireReport(id, extinguishedFires);
         }
     }
 
