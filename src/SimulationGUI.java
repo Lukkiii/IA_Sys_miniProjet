@@ -8,15 +8,24 @@ public class SimulationGUI extends JFrame {
     private JTextArea infoPanel;
     private final int hqX;
     private final int hqY;
+    private JButton startButton;
+    private JButton stopButton;
+    private JButton resetButton;
+    private Simulation simulation;
 
-    public SimulationGUI(int width, int height, int hqX, int hqY) {
+    public SimulationGUI(int width, int height, int hqX, int hqY, Simulation simulation) {
         setTitle("Fire Spread Simulation");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         
         this.hqX = hqX;
         this.hqY = hqY;
+        this.simulation = simulation;
         
         JPanel mainPanel = new JPanel(new BorderLayout());
+
+        JPanel controlPanel = new JPanel();
+        createControlButtons(controlPanel);
+        mainPanel.add(controlPanel, BorderLayout.NORTH);
         
         simulationPanel = new SimulationPanel(width, height);
         mainPanel.add(simulationPanel, BorderLayout.CENTER);
@@ -35,6 +44,55 @@ public class SimulationGUI extends JFrame {
         setLocationRelativeTo(null);
         setVisible(true);
     }
+
+    private void createControlButtons(JPanel panel) {
+        startButton = new JButton("Start");
+        stopButton = new JButton("Stop");
+        resetButton = new JButton("Reset");
+
+        for (JButton button : new JButton[]{startButton, stopButton, resetButton}) {
+            button.setPreferredSize(new Dimension(100, 30));
+            button.setFont(new Font("Arial", Font.BOLD, 14));
+        }
+
+        startButton.setBackground(new Color(50, 205, 50));
+        startButton.setForeground(Color.BLACK);
+        stopButton.setBackground(new Color(220, 20, 60));
+        stopButton.setForeground(Color.BLACK);
+        resetButton.setBackground(new Color(30, 144, 255));
+        resetButton.setForeground(Color.BLACK);
+
+        startButton.addActionListener(e -> {
+            simulation.start();
+            startButton.setEnabled(false);
+            stopButton.setEnabled(true);
+            resetButton.setEnabled(false);
+        });
+
+        stopButton.addActionListener(e -> {
+            simulation.stop();
+            startButton.setEnabled(true);
+            stopButton.setEnabled(false);
+            resetButton.setEnabled(true);
+        });
+
+        resetButton.addActionListener(e -> {
+            simulation.reset();
+            startButton.setEnabled(true);
+            stopButton.setEnabled(false);
+            resetButton.setEnabled(true);
+        });
+
+        stopButton.setEnabled(false);
+        resetButton.setEnabled(false);
+
+        panel.add(startButton);
+        panel.add(Box.createHorizontalStrut(10));
+        panel.add(stopButton);
+        panel.add(Box.createHorizontalStrut(10));
+        panel.add(resetButton);
+    }
+
 
     public void updateDisplay(double[][] intensityMap, String info, List<Robot> robots) {
         simulationPanel.updateState(intensityMap);

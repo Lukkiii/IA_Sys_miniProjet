@@ -21,14 +21,15 @@ public class Simulation {
     private List<Robot> robots;
 
     public Simulation() {
+        initializeSimulation();
+    }
+
+    private void initializeSimulation() {
         this.fire = new Fire(HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight());
         this.hq = new HeadQuarters(HeadQuarters.getHqX(), HeadQuarters.getHqY(), 
                                  HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight());
-        this.gui = new SimulationGUI(HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight(), 
-                                   HeadQuarters.getHqX(), HeadQuarters.getHqY());
         this.isRunning = false;
-        this.fireExecutor = Executors.newScheduledThreadPool(1);
-        this.robotExecutor = Executors.newScheduledThreadPool(1);
+        this.timeStep = 0;
         this.robots = new CopyOnWriteArrayList<>();
         initializeRobots();
     }
@@ -69,9 +70,24 @@ public class Simulation {
         }
     }
 
+    public void createGUI() {
+        this.gui = new SimulationGUI(HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight(), 
+                                   HeadQuarters.getHqX(), HeadQuarters.getHqY(), this);
+    }
+
+    public void reset() {
+        stop();
+        initializeSimulation();
+        updateGUI();
+    }
+
     // Démarrer la simulation
     public void start() {
+        if (isRunning) return;
+
         isRunning = true;
+        this.fireExecutor = Executors.newScheduledThreadPool(1);
+        this.robotExecutor = Executors.newScheduledThreadPool(1);
 
         // Scheduler les mises à jour de feu à un rythme régulier
         fireExecutor.scheduleAtFixedRate(() -> {
@@ -94,11 +110,19 @@ public class Simulation {
     // Arrêter la simulation
     public void stop() {
         isRunning = false;
-        fireExecutor.shutdown();
-        robotExecutor.shutdown();
+        if (fireExecutor != null) {
+            fireExecutor.shutdown();
+        }
+        if (robotExecutor != null) {
+            robotExecutor.shutdown();
+        }
         try {
-            fireExecutor.awaitTermination(1, TimeUnit.SECONDS);
-            robotExecutor.awaitTermination(1, TimeUnit.SECONDS);
+            if (fireExecutor != null) {
+                fireExecutor.awaitTermination(1, TimeUnit.SECONDS);
+            }
+            if (robotExecutor != null) {
+                robotExecutor.awaitTermination(1, TimeUnit.SECONDS);
+            }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
@@ -141,6 +165,6 @@ public class Simulation {
 
     public static void main(String[] args) {
         Simulation simulation = new Simulation();
-        simulation.start();
+        simulation.createGUI();
     }
 }
