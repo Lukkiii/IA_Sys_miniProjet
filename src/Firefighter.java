@@ -50,11 +50,10 @@ public class Firefighter extends Robot {
         // Mettre à jour les connaissances locales
         if (isAtHQ()) {
             localKnowledge = hq.getGlobalMap();
+            handleAtHQState();
         }
 
-        if (currentState == State.AT_HQ) {
-            handleAtHQState();
-        } else if (currentState == State.MOVING_TO_FIRE) {
+        if (currentState == State.MOVING_TO_FIRE) {
             handleMovingToFireState(hq);
         } else if (currentState == State.EXTINGUISHING) {
             handleExtinguishingState(hq);

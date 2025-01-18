@@ -97,7 +97,7 @@ public class SimulationGUI extends JFrame {
     public void updateDisplay(double[][] intensityMap, String info, List<Robot> robots, List<Survivor> survivors) {
         simulationPanel.updateState(intensityMap);
         simulationPanel.updateRobots(robots);
-        simulationPanel.updateSurvivors(survivors);  // 新增
+        simulationPanel.updateSurvivors(survivors);
         infoPanel.setText(info);
         simulationPanel.repaint();
     }
@@ -246,7 +246,7 @@ public class SimulationGUI extends JFrame {
                         robotColor = Color.GRAY;
                         robotStatus = "Refilling water";
                     } else if (robot.isAtHQ()) {
-                        robotColor = Color.YELLOW;
+                        robotColor = Color.LIGHT_GRAY;
                         robotStatus = "waiting...";
                     } else if (robot.currentState == Robot.State.MOVING_TO_FIRE) {
                         robotColor = Color.PINK;
