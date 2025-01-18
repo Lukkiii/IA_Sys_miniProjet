@@ -150,7 +150,11 @@ public class SimulationGUI extends JFrame {
                         robotStatus = "Scouting";
                     }
                 } else if (robot instanceof Firefighter) {
-                    if (robot.currentState == Robot.State.RECHARGING_ELECTRICITY) {
+                    if (robot.currentState == Robot.State.RECHARGING_ELECTRICITY && 
+                        ((Firefighter)robot).getWaterPercentage() < 100.0) {
+                        robotColor = Color.GRAY;
+                        robotStatus = "Recharging & Refilling";
+                    } else if (robot.currentState == Robot.State.RECHARGING_ELECTRICITY) {
                         robotColor = Color.GRAY;
                         robotStatus = "Recharging electricity";
                     } else if (robot.currentState == Robot.State.RECHARGING_WATER) {

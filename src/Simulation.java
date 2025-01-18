@@ -7,7 +7,7 @@ import javax.swing.SwingUtilities;
 
 public class Simulation {
 
-    private static final int FIRE_UPDATE_INTERVAL = 1000;
+    private static final int FIRE_UPDATE_INTERVAL = 2000;
     private static final int ROBOT_UPDATE_INTERVAL = 300;
 
     private Fire fire;

@@ -1,20 +1,18 @@
 public class Firefighter extends Robot {
+    // Declaration de constantes
     private static final int VISION_RANGE = 3;
     private static final int EXTINGUISH_RADIUS = 10;
-    private static final double EXTINGUISH_AMOUNT = 40.0;
-    private static final int MAX_EXTINGUISHING_TIME = 20;
-    private static final int MAX_MOVING_TIME = 20;
+    private static final double EXTINGUISH_AMOUNT = 35.0;
     private static final double MAX_WATER = 100.0;
     private static final double WATER_USE_RATE = 50.0;
     private static final long WATER_REFILL_TIME = 2000;
 
+    // Declaration des attributs
     private double currentWater;
     private long waterRefillStartTime;
     private FireGrid fireGrid;
     private int targetX = -1;
     private int targetY = -1;
-    private int extinguishingTime = 0;
-    private int movingTime = 0;
 
     public Firefighter(int id, int x, int y, int gridWidth, int gridHeight) {
         super(id, x, y, gridWidth, gridHeight);
@@ -24,6 +22,134 @@ public class Firefighter extends Robot {
     @Override
     public String getType() {
         return TYPE_FIREFIGHTER;
+    }
+
+    // ===== Mettre à jour le status =====
+    @Override
+    public void updateState(HeadQuarters hq) {
+        // Mettre à jour l'état de l'électricité
+        if (handleChargingElectricityState()) {
+            return;
+        }
+
+        if (handleChargingWaterState()) {
+            return;
+        }
+
+        if (handleNeedsElectricityRecharge()) {
+            return;
+        }
+
+        if (handleNeedsWaterRefill()) {
+            return;
+        }
+
+        // Mettre à jour les connaissances locales
+        if (isAtHQ()) {
+            localKnowledge = hq.getGlobalMap();
+        }
+
+        if (currentState == State.AT_HQ) {
+            handleAtHQState();
+        } else if (currentState == State.MOVING_TO_FIRE) {
+            handleMovingToFireState();
+        } else if (currentState == State.EXTINGUISHING) {
+            handleExtinguishingState();
+        } else if (currentState == State.MOVING_TO_HQ) {
+            handleMovingToHQState(hq);
+        }
+    }
+
+    
+    private boolean handleChargingElectricityState() {
+        if (currentState == State.RECHARGING_ELECTRICITY) {
+            if (isRechargeComplete()) {
+                finishRecharge();
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleNeedsElectricityRecharge() {
+        if (needsRecharge() && currentState != State.MOVING_TO_HQ && !isAtHQ()) {
+            currentState = State.MOVING_TO_HQ;
+            returnToHQ();
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleChargingWaterState() {
+        if (currentState == State.RECHARGING_WATER) {
+            if (isWaterRefillComplete()) {
+                finishWaterRefill();
+                currentState = State.AT_HQ;
+            }
+            return true;
+        }
+        return false;
+    }
+    
+    private boolean handleNeedsWaterRefill() {
+        if (currentWater < WATER_USE_RATE && currentState != State.MOVING_TO_HQ && !isAtHQ()) {
+            currentState = State.MOVING_TO_HQ;
+            returnToHQ();
+            return true;
+        }
+        return false;
+    }
+
+    private void handleAtHQState() {
+        if (needsRecharge() || currentWater < MAX_WATER) {
+            if (needsRecharge()) {
+                startRecharge();
+            }
+            if (currentWater < MAX_WATER) {
+                startWaterRefill();
+            }
+        } else {
+            int[] fireLocation = findNearestFireInLocalMap();
+            if (fireLocation != null) {
+                targetX = fireLocation[0];
+                targetY = fireLocation[1];
+                currentState = State.MOVING_TO_FIRE;
+                moveSmartlyTowards(targetX, targetY);
+            }
+        }
+    }
+
+    private void handleMovingToFireState() {
+        if (isNearFireDirect()) {
+            currentState = State.EXTINGUISHING;
+            extinguishFire();
+        } else {
+            moveSmartlyTowards(targetX, targetY);
+        }
+    }
+    
+    private void handleExtinguishingState() {
+        if (isNearFireDirect()) {
+            extinguishFire();
+        } else {
+            returnToHQ();
+        }
+    }
+
+    private void handleMovingToHQState(HeadQuarters hq) {
+        moveSmartlyTowards(hq.getX(), hq.getY());
+        if (isAtHQ()) {
+            if (needsRecharge() || currentWater < MAX_WATER) {
+                if (needsRecharge()) {
+                    startRecharge();
+                }
+                if (currentWater < MAX_WATER) {
+                    startWaterRefill();
+                }
+            } else {
+                currentState = State.AT_HQ;
+            }
+        }
     }
 
     private int[] findNearestFireInLocalMap() {
@@ -47,126 +173,14 @@ public class Firefighter extends Robot {
         return (nearestX != -1) ? new int[]{nearestX, nearestY} : null;
     }
 
-    @Override
-    public void updateState(HeadQuarters hq) {
-
-        if (currentState == State.RECHARGING_ELECTRICITY) {
-            if (isRechargeComplete()) {
-                finishRecharge();
-            }
-            return;
-        }
-
-        if (needsRecharge() && currentState != State.MOVING_TO_HQ && !isAtHQ()) {
-            currentState = State.MOVING_TO_HQ;
-            returnToHQ();
-            return;
-        }
-
-        if (isAtHQ()) {
-            localKnowledge = hq.getGlobalMap();
-        }
-
-        if (currentState == State.AT_HQ) {
-            if (needsRecharge()) {
-                startRecharge();
-            } else {
-                int[] fireLocation = findNearestFireInLocalMap();
-                if (fireLocation != null) {
-                    targetX = fireLocation[0];
-                    targetY = fireLocation[1];
-                    extinguishingTime = 0;
-                    movingTime = 0;
-                    currentState = State.MOVING_TO_FIRE;
-                    moveSmartlyTowards(targetX, targetY);
-                }
-            }
-        } else if (currentState == State.MOVING_TO_FIRE) {
-            movingTime++;
-            if (movingTime >= MAX_MOVING_TIME) {
-                returnToHQ();
-            } else if (isNearFireDirect()) {
-                movingTime = 0;
-                currentState = State.EXTINGUISHING;
-                extinguishFire();
-            } else {
-                moveSmartlyTowards(targetX, targetY);
-            }
-        } else if (currentState == State.EXTINGUISHING) {
-            extinguishingTime++;
-            if (isNearFireDirect()) {
-                if (extinguishingTime >= MAX_EXTINGUISHING_TIME) {
-                    returnToHQ();
-                } else {
-                    extinguishFire();
-                }
-            } else {
-                returnToHQ();
-            }
-        } else if (currentState == State.MOVING_TO_HQ) {
-            moveSmartlyTowards(hq.getX(), hq.getY());
-            if (isAtHQ()) {
-                if (needsRecharge()) {
-                    startRecharge();
-                } else {
-                    currentState = State.AT_HQ;
-                }
-            }
-        }
-        
-    }
-
-    private void startWaterRefill() {
-        waterRefillStartTime = System.currentTimeMillis();
-        currentState = State.RECHARGING_WATER;
-    }
-
-    private boolean isWaterRefillComplete() {
-        if (currentState != State.RECHARGING_WATER) {
-            return false;
-        }
-        return System.currentTimeMillis() - waterRefillStartTime >= WATER_REFILL_TIME;
-    }
-
-    private void finishWaterRefill() {
-        currentWater = MAX_WATER;
-    }
-
-    @Override
-    public String getStatusDescription() {
-        StringBuilder status = new StringBuilder();
-        
-        if (currentState == State.RECHARGING_ELECTRICITY) {
-            status.append(String.format("Recharging (%.0f%%)", getEnergyPercentage()));
-        } else if (currentState == State.RECHARGING_WATER) {
-            status.append(String.format("Refilling water (%.0f%%)", getWaterRefillPercentage()));
-        } else {
-            status.append(currentState.toString());
-        }
-
-        status.append(String.format(" [E:%.0f%% W:%.0f%%]", getEnergyPercentage(), getWaterPercentage()));
-        
-        return status.toString();
-    }
-
-    private double getWaterRefillPercentage() {
-        long refillTime = System.currentTimeMillis() - waterRefillStartTime;
-        return Math.min(100.0, (refillTime * 100.0) / WATER_REFILL_TIME);
-    }
-
-    public double getWaterPercentage() {
-        return (currentWater / MAX_WATER) * 100.0;
-    }
-
     private boolean isNearFireDirect() {
         for (int dx = -VISION_RANGE; dx <= VISION_RANGE; dx++) {
             for (int dy = -VISION_RANGE; dy <= VISION_RANGE; dy++) {
                 int newX = x + dx;
                 int newY = y + dy;
-                if (isValidPosition(newX, newY)) {
-                    if (localKnowledge[newX][newY] > FireGrid.INTENSITY_THRESHOLD) {
-                        return true;
-                    }
+                if (isValidPosition(newX, newY) && 
+                    fireGrid.getIntensity(newX, newY) > FireGrid.INTENSITY_THRESHOLD) {
+                    return true;
                 }
             }
         }
@@ -211,13 +225,18 @@ public class Firefighter extends Robot {
     }
 
     public void extinguishFire() {
-        if (needsRecharge()) {
+        if (needsRecharge() || currentWater <= 0) {
             returnToHQ();
             return;
         }
 
-        // double waterUsed = WATER_USE_RATE * (300.0 / 1000.0);
-        // currentWater = Math.max(0, currentWater - waterUsed);
+        double waterNeeded = WATER_USE_RATE * (300.0 / 1000.0);
+        if (currentWater < waterNeeded) {
+            returnToHQ();
+            return;
+        }
+
+        currentWater = Math.max(0, currentWater - waterNeeded);
 
         for (int dx = -EXTINGUISH_RADIUS; dx <= EXTINGUISH_RADIUS; dx++) {
             for (int dy = -EXTINGUISH_RADIUS; dy <= EXTINGUISH_RADIUS; dy++) {
@@ -234,6 +253,55 @@ public class Firefighter extends Robot {
                 }
             }
         }
+    }
+
+    private void startWaterRefill() {
+        waterRefillStartTime = System.currentTimeMillis();
+        currentState = State.RECHARGING_WATER;
+    }
+
+    private boolean isWaterRefillComplete() {
+        if (currentState != State.RECHARGING_WATER) {
+            return false;
+        }
+        return System.currentTimeMillis() - waterRefillStartTime >= WATER_REFILL_TIME;
+    }
+
+    private void finishWaterRefill() {
+        currentWater = MAX_WATER;
+    }
+
+    public double getWaterPercentage() {
+        return (currentWater / MAX_WATER) * 100.0;
+    }
+
+    private double getWaterRefillPercentage() {
+        long refillTime = System.currentTimeMillis() - waterRefillStartTime;
+        return Math.min(100.0, (refillTime * 100.0) / WATER_REFILL_TIME);
+    }
+
+
+    @Override
+    public String getStatusDescription() {
+        StringBuilder status = new StringBuilder();
+        
+        boolean isCharging = currentState == State.RECHARGING_ELECTRICITY;
+        boolean isRefilling = currentWater < MAX_WATER;
+        
+        if (isCharging && isRefilling) {
+            status.append(String.format("Recharging & Refilling (E:%.0f%% W:%.0f%%)", 
+                getEnergyPercentage(), getWaterRefillPercentage()));
+        } else if (isCharging) {
+            status.append(String.format("Recharging (%.0f%%)", getEnergyPercentage()));
+        } else if (isRefilling) {
+            status.append(String.format("Refilling water (%.0f%%)", getWaterRefillPercentage()));
+        } else {
+            status.append(currentState.toString());
+        }
+    
+        status.append(String.format(" [E:%.0f%% W:%.0f%%]", getEnergyPercentage(), getWaterPercentage()));
+        
+        return status.toString();
     }
 
     public void setFireGrid(FireGrid fireGrid) {

@@ -66,4 +66,8 @@ public class FireGrid {
     public void increaseIntensity(int x, int y, double amount) {
         grid[x][y] = Math.min(MAX_INTENSITY, grid[x][y] + amount);
     }
+
+    public double getIntensity(int newX, int newY) {
+        return grid[newX][newY];
+    }
 }
