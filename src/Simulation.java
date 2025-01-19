@@ -23,6 +23,7 @@ public class Simulation {
     private ScheduledExecutorService fireExecutor;
     private ScheduledExecutorService robotExecutor;
     private int timeStep = 0;
+    private FireStatistics statistics;
 
     private List<Robot> robots;
     private List<Survivor> survivors;
@@ -43,6 +44,7 @@ public class Simulation {
         this.timeStep = 0;
         this.robots = new CopyOnWriteArrayList<>();
         this.survivors = new CopyOnWriteArrayList<>();
+        this.statistics = new FireStatistics();
         initializeRobots();       
     }
 
@@ -97,6 +99,12 @@ public class Simulation {
 
     // Mettre à jour l'interface graphique
     private void updateGUI() {
+        statistics.updateStatistics(
+            fire.getIntensityMap(),
+            survivors,
+            fireGrid.getIntensityThreshold()
+        );
+
         SwingUtilities.invokeLater(() -> {
             gui.updateDisplay(fire.getIntensityMap(), generateSimulationInfo(), robots, survivors);
         });
@@ -143,6 +151,10 @@ public class Simulation {
 
     public FireGrid getFireGrid() {
         return fireGrid;
+    }
+
+    public FireStatistics getStatistics() {
+        return statistics;
     }
 
     // Réinitialiser la simulation
@@ -237,29 +249,8 @@ public class Simulation {
         }
         info.append("\n");
 
-        info.append("=== Survivors Status ===\n");
-        long activeCount = survivors.stream()
-            .filter(s -> !s.isRescued() && !s.isDead()).count();
-        long rescuedCount = survivors.stream()
-            .filter(Survivor::isRescued).count();
-        long deadCount = survivors.stream()
-            .filter(Survivor::isDead).count();
-    
-        info.append("Active Survivors: ").append(activeCount).append("\n");
-        info.append("Rescued Survivors: ").append(rescuedCount).append("\n");
-        info.append("Lost Survivors: ").append(deadCount).append("\n");
-
-        double[][] intensityMap = fire.getIntensityMap();
-        int fireCount = 0;
-        for (int i = 0; i < HeadQuarters.GRID_WIDTH; i++) {
-            for (int j = 0; j < HeadQuarters.GRID_HEIGHT; j++) {
-                if (intensityMap[i][j] > fireGrid.getIntensityThreshold()) {
-                    fireCount++;
-                }
-            }
-        }
-        info.append("Active Fires: ").append(fireCount).append("\n");
-        info.append("Total Time Steps: ").append(timeStep);
+        info.append("=== Statistics ===\n");
+        info.append(statistics.getFormattedStatistics()).append("\n");
 
         return info.toString();
     }
