@@ -9,6 +9,11 @@
   - Boutons de contrôle de simulation
 
 - **Système de Feu** :
+  - 4 types de feux différents :
+    - Feu électrique: forte intensité, propagation rapide
+    - Feu chimique: très forte intensité, propagation modérée  
+    - Feu ordinaire: intensité moyenne, propagation modérée
+    - Feu couvant: faible intensité, propagation lente
   - Propagation dynamique avec intensités variables
   - Probabilité de propagation configurable
   - Zone de sécurité autour du QG
@@ -22,6 +27,13 @@
   - Apparition près des zones d'incendie
   - États de sauvetage dynamiques
   - Conditions de survie basées sur l'intensité du feu
+
+- **Statistiques en Temps Réel** :
+  - Taux de survie des victimes
+  - Taux de contrôle du feu
+  - Nombre de feux actifs/éteints
+  - Durée de la simulation
+  - Statistiques des survivants (total, sauvés, perdus)
 
 ### Composants Techniques
 
@@ -37,12 +49,34 @@
    - Mise à jour des états
    - Gestion des survivants
 
-3. **Robot.java** (Classes abstraites et dérivées) :
+3. **Fire.java** :
+   - Gestion de la propagation du feu
+   - Initialisation de foyers multiples
+   - Algorithme de propagation dynamique
+   - Protection de la zone QG
+
+4. **FireGrid.java** :
+   - Gestion de la grille d'intensité du feu
+   - Contrôle des seuils d'intensité
+   - Mise à jour dynamique des intensités
+   - Interface avec les scénarios de feu
+
+5. **FireStatistics.java** :
+   - Suivi des statistiques en temps réel
+   - Calcul des taux de survie et contrôle
+   - Génération des rapports
+
+6. **FireScenario.java** :
+   - Définition des différents types de feux
+   - Paramètres de propagation
+   - Caractéristiques spécifiques
+
+7. **Robot.java** (Classes abstraites et dérivées) :
    - Scout : Exploration et détection
    - Firefighter : Extinction des feux
    - Gestion de l'énergie et de l'eau
 
-4. **HeadQuarters.java** :
+8. **HeadQuarters.java** :
    - Coordination centrale
    - Déploiement des robots
    - Cartographie globale des incendies
