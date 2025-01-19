@@ -1,9 +1,14 @@
 public class FireScenario {
     public static class Parameters {
+        // Intensité maximale du feu
         public final double maxIntensity;
+        // Intensité initiale du feu
         public final double initialIntensity;
+        // Seuil d'intensité pour déclencher la propagation
         public final double intensityThreshold;
+        // Probabilité de propagation du feu
         public final double spreadProbability;
+        // Description du scénario de feu
         public final String description;
 
         public Parameters(double maxIntensity, double initialIntensity, 
