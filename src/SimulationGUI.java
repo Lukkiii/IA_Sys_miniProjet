@@ -106,6 +106,7 @@ public class SimulationGUI extends JFrame {
 
     private class SimulationPanel extends JPanel {
         private double[][] intensityMap;
+        private FireGrid fireGrid;
         private final int width;
         private final int height;
         private final int cellSize = 20;
@@ -121,6 +122,7 @@ public class SimulationGUI extends JFrame {
 
         public void updateState(double[][] intensityMap) {
             this.intensityMap = intensityMap;
+            this.fireGrid = simulation.getFireGrid();
         }
 
         public void updateRobots(List<Robot> robots) {
@@ -132,11 +134,11 @@ public class SimulationGUI extends JFrame {
         }
 
         private Color getFireColor(double intensity) {
-            if (intensity <= FireGrid.INTENSITY_THRESHOLD) return Color.WHITE;
+            if (intensity <= fireGrid.getIntensityThreshold()) return Color.WHITE;
 
             // Normaliser l'intensité pour obtenir une valeur entre 0 et 1
-            double normalized = (intensity - FireGrid.INTENSITY_THRESHOLD) / 
-                              (FireGrid.MAX_INTENSITY - FireGrid.INTENSITY_THRESHOLD);
+            double normalized = (intensity - fireGrid.getIntensityThreshold()) / 
+                              (fireGrid.getMaxIntensity() - fireGrid.getIntensityThreshold());
             
             // Définir les couleurs en fonction de l'intensité normalisée
             if (normalized < 0.3) {
@@ -178,7 +180,7 @@ public class SimulationGUI extends JFrame {
             if (intensityMap != null) {
                 for (int i = 0; i < width; i++) {
                     for (int j = 0; j < height; j++) {
-                        if (intensityMap[i][j] > FireGrid.INTENSITY_THRESHOLD) {
+                        if (intensityMap[i][j] > fireGrid.getIntensityThreshold()) {
                             g2d.setColor(getFireColor(intensityMap[i][j]));
                             g2d.fillRect(i * cellSize + 1, j * cellSize + 1, 
                                        cellSize - 2, cellSize - 2);

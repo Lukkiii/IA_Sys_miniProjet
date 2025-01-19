@@ -170,7 +170,7 @@ public class Firefighter extends Robot {
 
         for (int i = 0; i < localKnowledge.length; i++) {
             for (int j = 0; j < localKnowledge[0].length; j++) {
-                if (localKnowledge[i][j] > FireGrid.INTENSITY_THRESHOLD) {
+                if (localKnowledge[i][j] > fireGrid.getIntensityThreshold()) {
                     double distance = Math.sqrt(Math.pow(i - x, 2) + Math.pow(j - y, 2));
                     if (distance < minDistance) {
                         minDistance = distance;
@@ -191,7 +191,7 @@ public class Firefighter extends Robot {
                 int newX = x + dx;
                 int newY = y + dy;
                 if (isValidPosition(newX, newY) && 
-                    fireGrid.getIntensity(newX, newY) > FireGrid.INTENSITY_THRESHOLD) {
+                    fireGrid.getIntensity(newX, newY) > fireGrid.getIntensityThreshold()) {
                     return true;
                 }
             }
@@ -232,7 +232,7 @@ public class Firefighter extends Robot {
     // Calculer le risque de mouvement
     private double calculateMovementRisk(int x, int y, int targetX, int targetY) {
         double distanceToTarget = Math.sqrt(Math.pow(x - targetX, 2) + Math.pow(y - targetY, 2));
-        double fireRisk = localKnowledge[x][y] > FireGrid.INTENSITY_THRESHOLD ? 
+        double fireRisk = localKnowledge[x][y] > fireGrid.getIntensityThreshold() ? 
                          localKnowledge[x][y] : 0;
         
         return distanceToTarget + (fireRisk * 0.5);
@@ -264,7 +264,7 @@ public class Firefighter extends Robot {
                         double effect = EXTINGUISH_AMOUNT * (1.0 - (distance / (EXTINGUISH_RADIUS + 1)));
                         if (fireGrid != null) {
                             fireGrid.decreaseIntensity(newX, newY, effect);
-                            if (fireGrid.getIntensity(newX, newY) <= FireGrid.INTENSITY_THRESHOLD) {
+                            if (fireGrid.getIntensity(newX, newY) <= fireGrid.getIntensityThreshold()) {
                                 extinguishedFires.add(new FireSpot(newX, newY, 0, System.currentTimeMillis()));
                             }
                         }

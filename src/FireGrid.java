@@ -1,20 +1,16 @@
 
 public class FireGrid {
-    // Valeur maximale de l'intensité du feu
-    public static final double MAX_INTENSITY = 100.0;
-    // Intensité initiale du feu
-    public static final double INITIAL_INTENSITY = 80.0;
-    // Seuil d'intensité pour déterminer si une case est en feu
-    public static final double INTENSITY_THRESHOLD = 10.0;
+    private final FireScenario.Parameters params;
 
     private double[][] grid;
     private int width;
     private int height;
 
-    public FireGrid(int width, int height) {
+    public FireGrid(int width, int height, FireScenario.Parameters params) {
         this.width = width;
         this.height = height;
         this.grid = new double[width][height];
+        this.params = params;
     }
 
     // Mettre à jour la grille avec de nouvelles intensités
@@ -31,7 +27,7 @@ public class FireGrid {
     }
 
     public void increaseIntensity(int x, int y, double amount) {
-        grid[x][y] = Math.min(MAX_INTENSITY, grid[x][y] + amount);
+        grid[x][y] = Math.min(params.maxIntensity, grid[x][y] + amount);
     }
 
     // ====== Getter et setter pour la grille d'intensité du feu ======
@@ -58,10 +54,16 @@ public class FireGrid {
     }
 
     public void setIntensityAt(int x, int y, double intensity) {
-        grid[x][y] = Math.min(Math.max(intensity, 0.0), MAX_INTENSITY);
+        grid[x][y] = Math.min(Math.max(intensity, 0.0), params.maxIntensity);
     }
 
     public double getIntensity(int newX, int newY) {
         return grid[newX][newY];
     }
+
+    public double getMaxIntensity() { return params.maxIntensity; }
+    public double getInitialIntensity() { return params.initialIntensity; }
+    public double getIntensityThreshold() { return params.intensityThreshold; }
+    public double getSpreadProbability() { return params.spreadProbability; }
+    public String getScenarioDescription() { return params.description; }
 }

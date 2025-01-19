@@ -16,6 +16,7 @@ public class Simulation {
     private static final int MAX_SURVIVORS = 7;
 
     private Fire fire;
+    private FireGrid fireGrid;
     private HeadQuarters hq;
     private SimulationGUI gui;
     private boolean isRunning;
@@ -31,9 +32,13 @@ public class Simulation {
     }
 
     private void initializeSimulation() {
-        this.fire = new Fire(HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight());
+        FireScenario.Parameters scenario = FireScenario.CHEMICAL;
+        this.fireGrid = new FireGrid(HeadQuarters.getGridWidth(), 
+                                   HeadQuarters.getGridHeight(), 
+                                   scenario);
+        this.fire = new Fire(fireGrid);
         this.hq = new HeadQuarters(HeadQuarters.getHqX(), HeadQuarters.getHqY(), 
-                                 HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight());
+                                 HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight(), fireGrid);
         this.isRunning = false;
         this.timeStep = 0;
         this.robots = new CopyOnWriteArrayList<>();
@@ -58,7 +63,7 @@ public class Simulation {
         
         for (int i = 0; i < HeadQuarters.getGridWidth(); i++) {
             for (int j = 0; j < HeadQuarters.getGridHeight(); j++) {
-                if (intensityMap[i][j] > FireGrid.INTENSITY_THRESHOLD) {
+                if (intensityMap[i][j] > fireGrid.getIntensityThreshold()) {
                     allFireLocations.add(new Point(i, j));
                 }
             }
@@ -111,14 +116,14 @@ public class Simulation {
     private void updateRobots() {
         Firefighter newRobot = hq.checkAndAddFirefighter();
         if (newRobot != null) {
-            newRobot.setFireGrid(fire.getFireGrid());
+            newRobot.setFireGrid(fireGrid);
             robots.add(newRobot);
         }
         
         for (Robot robot : robots) {
             if (robot instanceof Scout) {
                 if (((Scout)robot).getFireGrid() == null) {
-                    ((Scout)robot).setFireGrid(fire.getFireGrid());
+                    ((Scout)robot).setFireGrid(fireGrid);
                 }
                 ((Scout)robot).updateState(hq);
             } else if (robot instanceof Firefighter) {
@@ -134,6 +139,10 @@ public class Simulation {
     public void createGUI() {
         this.gui = new SimulationGUI(HeadQuarters.getGridWidth(), HeadQuarters.getGridHeight(), 
                                    HeadQuarters.getHqX(), HeadQuarters.getHqY(), this);
+    }
+
+    public FireGrid getFireGrid() {
+        return fireGrid;
     }
 
     // Réinitialiser la simulation
@@ -208,6 +217,13 @@ public class Simulation {
         info.append("Grid Size: ").append(HeadQuarters.GRID_WIDTH).append("x").append(HeadQuarters.GRID_HEIGHT).append("\n");
         info.append("HQ Position: [").append(HeadQuarters.HQ_X).append(",").append(HeadQuarters.HQ_Y).append("]\n\n");
         
+        info.append("=== Fire Status ===\n");
+        info.append("Max Intensity: ").append(fireGrid.getMaxIntensity()).append("\n");
+        info.append("Intensity Threshold: ").append(fireGrid.getIntensityThreshold()).append("\n");
+        info.append("Spread Probability: ").append(fireGrid.getSpreadProbability()).append("\n");
+        info.append("Initial Intensity: ").append(fireGrid.getInitialIntensity()).append("\n");
+        info.append("Fire Type: ").append(fireGrid.getScenarioDescription()).append("\n\n");
+
         info.append("=== Robots Status ===\n");
         long scoutCount = robots.stream().filter(r -> r instanceof Scout).count();
         long firefighterCount = robots.stream().filter(r -> r instanceof Firefighter).count();
@@ -237,7 +253,7 @@ public class Simulation {
         int fireCount = 0;
         for (int i = 0; i < HeadQuarters.GRID_WIDTH; i++) {
             for (int j = 0; j < HeadQuarters.GRID_HEIGHT; j++) {
-                if (intensityMap[i][j] > FireGrid.INTENSITY_THRESHOLD) {
+                if (intensityMap[i][j] > fireGrid.getIntensityThreshold()) {
                     fireCount++;
                 }
             }

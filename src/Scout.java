@@ -118,7 +118,7 @@ public class Scout extends Robot {
                 
                 if (isValidPosition(newX, newY)) {
                     double intensity = observeFireIntensity(newX, newY);
-                    if (intensity > FireGrid.INTENSITY_THRESHOLD) {
+                    if (intensity > fireGrid.getIntensityThreshold()) {
                         discoveredFires.add(new FireSpot(newX, newY, intensity, System.currentTimeMillis()));
                     }
                 }
@@ -316,7 +316,7 @@ public class Scout extends Robot {
     private void cleanupOldFireLocations() {
         fireLocations.entrySet().removeIf(entry -> {
             Point p = entry.getKey();
-            return fireGrid.getIntensityAt(p.x, p.y) <= FireGrid.INTENSITY_THRESHOLD;
+            return fireGrid.getIntensityAt(p.x, p.y) <= fireGrid.getIntensityThreshold();
         });
     }
 

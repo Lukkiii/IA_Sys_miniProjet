@@ -2,7 +2,7 @@ import java.util.*;
 
 public class HeadQuarters {
     // Durée de validité des rapports de feu en millisecondes
-    public static final long REPORT_EXPIRATION_TIME = 100;
+    public static final long REPORT_EXPIRATION_TIME = 1000;
     public static final int MAX_ROBOTS = 7;
     public static final int INITIAL_SCOUTS = 2;
     public static final int GRID_WIDTH = 24;
@@ -18,13 +18,16 @@ public class HeadQuarters {
     private Map<Integer, List<FireSpot>> robotReports = new HashMap<>();
     private Map<FireSpot, Long> reportTimes = new HashMap<>();
     private List<Firefighter> firefighters = new ArrayList<>();
+    private FireGrid fireGrid;
+
     
-    public HeadQuarters(int x, int y, int width, int height) {
+    public HeadQuarters(int x, int y, int width, int height, FireGrid fireGrid) {
         this.x = x;
         this.y = y;
         this.gridWidth = width;
         this.gridHeight = height;
         this.globalFireMap = new double[width][height];
+        this.fireGrid = fireGrid;
     }
 
     // Vérifie si un nouveau robot pompier est nécessaire et le crée si besoin
@@ -32,7 +35,7 @@ public class HeadQuarters {
         int activeFireCount = 0;
         for (int i = 0; i < gridWidth; i++) {
             for (int j = 0; j < gridHeight; j++) {
-                if (globalFireMap[i][j] > FireGrid.INTENSITY_THRESHOLD) {
+                if (globalFireMap[i][j] > fireGrid.getIntensityThreshold()) {
                     activeFireCount++;
                 }
             }
@@ -90,7 +93,7 @@ public class HeadQuarters {
         robotReports.values().forEach(spots -> 
             spots.removeIf(spot -> 
                 !reportTimes.containsKey(spot) || 
-                globalFireMap[spot.x][spot.y] <= FireGrid.INTENSITY_THRESHOLD
+                globalFireMap[spot.x][spot.y] <= fireGrid.getIntensityThreshold()
             )
         );
         // Supprimer les rapport de feu vides
