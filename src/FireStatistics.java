@@ -68,7 +68,7 @@ public class FireStatistics {
         stats.append(String.format("- Current Fires: %d\n", currentFireCells));
         stats.append(String.format("- Max Spread: %d\n", maxFireCells));
 
-        // 添加运行时间
+        // Calculer la durée de la simulation
         long duration = (System.currentTimeMillis() - startTime) / 1000;
         stats.append(String.format("\nSimulation Time: %02d:%02d\n", 
             duration / 60, duration % 60));

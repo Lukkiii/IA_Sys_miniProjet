@@ -1,9 +1,5 @@
 import java.util.*;
 
-/**
- * Classe Scout - Robot éclaireur pour la détection des incendies
- * Cette classe gère un robot qui explore la zone pour détecter et signaler les incendies
- */
 public class Scout extends Robot {
     // ==== Constantes ====
     // Portée de vision du robot
