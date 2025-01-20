@@ -1,7 +1,5 @@
 import java.util.Random;
 public class Fire {
-    // Probabilité de propagation du feu
-    private static final double SPREAD_PROBABILITY = 0.3;
 
     private FireGrid fireGrid;
     private Random random = new Random();
@@ -91,7 +89,7 @@ public class Fire {
                 int ny = y + dy;
 
                 if (nx >= 0 && nx < fireGrid.getWidth() && ny >= 0 && ny < fireGrid.getHeight()) {
-                    if (newGrid[nx][ny] < fireGrid.getIntensityThreshold() && random.nextDouble() < SPREAD_PROBABILITY) {
+                    if (newGrid[nx][ny] < fireGrid.getIntensityThreshold() && random.nextDouble() < fireGrid.getSpreadProbability()) {
 
                         // Intensité de propagation du feu (60% à 90% de l'intensité source)
                         double spreadIntensity = sourceIntensity * (0.6 + random.nextDouble() * 0.3);
